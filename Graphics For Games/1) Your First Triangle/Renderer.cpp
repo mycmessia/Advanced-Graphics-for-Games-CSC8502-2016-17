@@ -29,7 +29,7 @@ void Renderer::RenderScene()
 
 	triangle->Draw ();
 
-	glUseProgram (0);
+	glUseProgram(0);
 
 	SwapBuffers ();
 }
