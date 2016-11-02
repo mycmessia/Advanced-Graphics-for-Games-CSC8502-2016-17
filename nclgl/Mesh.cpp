@@ -28,17 +28,23 @@ Mesh::~Mesh (void)
 Mesh* Mesh::GenerateTriangle () 
 {
 	Mesh* m = new Mesh ();
-	m->numVertices = 3;
+	m->numVertices = 6;
 
 	m->vertices = new Vector3[m->numVertices];
-	m->vertices[0] = Vector3 (-0.5f, 0.5f, 0.0f);
-	m->vertices[1] = Vector3 (0.5f, 0.5f, 0.0f);
-	m->vertices[2] = Vector3 (0.5f, -0.5f, 0.0f);
+	m->vertices[0] = Vector3 (-0.9f, -0.9f, 0.0f);
+	m->vertices[1] = Vector3 (0.85f, -0.9f, 0.0f);
+	m->vertices[2] = Vector3 (-0.9f, 0.85f, 0.0f);
+	m->vertices[3] = Vector3 (0.9f, -0.85f, 0.0f);
+	m->vertices[4] = Vector3 (0.9f, 0.9f, 0.0f);
+	m->vertices[5] = Vector3 (-0.85f, 0.9f, 0.0f);
 
 	m->colours = new Vector4[m->numVertices];
-	m->colours[0] = Vector4(0.0f, 0.0f, 0.0f, 1.0f);
+	m->colours[0] = Vector4 (1.0f, 0.0f, 0.0f, 1.0f);
 	m->colours[1] = Vector4 (0.0f, 1.0f, 0.0f, 1.0f);
 	m->colours[2] = Vector4 (0.0f, 0.0f, 1.0f, 1.0f);
+	m->colours[3] = Vector4 (0.0f, 0.0f, 1.0f, 1.0f);
+	m->colours[2] = Vector4 (0.0f, 0.0f, 1.0f, 1.0f);
+	m->colours[3] = Vector4 (0.0f, 0.0f, 1.0f, 1.0f);
 
 	m->BufferData ();
 	return m;
@@ -47,7 +53,7 @@ Mesh* Mesh::GenerateTriangle ()
 void Mesh::BufferData ()
 {
 	glBindVertexArray (arrayObject);
-	glGenBuffers (1, bufferObject);
+	glGenBuffers (1, &bufferObject[VERTEX_BUFFER]);
 	glBindBuffer (GL_ARRAY_BUFFER, bufferObject[VERTEX_BUFFER]);
 	glBufferData (GL_ARRAY_BUFFER, numVertices * sizeof (Vector4), vertices, GL_STATIC_DRAW);
 	glVertexAttribPointer (VERTEX_BUFFER, 3, GL_FLOAT, GL_FALSE, 0, 0);
@@ -57,7 +63,7 @@ void Mesh::BufferData ()
 	{
 		glGenBuffers (1, &bufferObject[COLOUR_BUFFER]);
 		glBindBuffer (GL_ARRAY_BUFFER, bufferObject[COLOUR_BUFFER]);
-		glBufferData (GL_ARRAY_BUFFER, numVertices * sizeof (Vector4), colours, GL_DYNAMIC_DRAW);
+		glBufferData (GL_ARRAY_BUFFER, numVertices * sizeof (Vector4), colours, GL_STATIC_DRAW);
 		glVertexAttribPointer (COLOUR_BUFFER, 4, GL_FLOAT, GL_FALSE, 0, 0);
 		glEnableVertexAttribArray (COLOUR_BUFFER);
 	}
@@ -67,7 +73,7 @@ void Mesh::BufferData ()
 
 void Mesh::ChangeColor ()
 {
-	void* change = glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
+	void* change = glMapBuffer (GL_ARRAY_BUFFER, GL_READ_WRITE);
 	
 	float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 	float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
@@ -82,7 +88,7 @@ void Mesh::ChangeColor ()
 
 	delete[] changed_colours;
 
-	glUnmapBuffer(GL_ARRAY_BUFFER);
+	glUnmapBuffer (GL_ARRAY_BUFFER);
 }
 
 void Mesh::Draw ()
