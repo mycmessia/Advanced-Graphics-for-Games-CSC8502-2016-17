@@ -96,6 +96,7 @@ void Shader::SetDefaultAttributes ()
 {
 	glBindAttribLocation (program, VERTEX_BUFFER, "position");
 	glBindAttribLocation (program, COLOUR_BUFFER, "colour");
+	glBindAttribLocation (program, TEXTURE_BUFFER, "texCoord");
 }
 
 bool Shader::LinkProgram ()
