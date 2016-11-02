@@ -49,14 +49,14 @@ void	Matrix4::SetScalingVector(const Vector3 &in) {
 Matrix4 Matrix4::Perspective(float znear, float zfar, float aspect, float fov) {
 	Matrix4 m;
 
-	const float h = 1.0f / tan(fov*PI_OVER_360);
-	float neg_depth = znear-zfar;
+	const float h = 1.0f / tan (fov * PI_OVER_360);
+	float neg_depth = znear - zfar;
 
 	m.values[0]		= h / aspect;
 	m.values[5]		= h;
-	m.values[10]	= (zfar + znear)/neg_depth;
+	m.values[10]	= (zfar + znear) / neg_depth;
 	m.values[11]	= -1.0f;
-	m.values[14]	= 2.0f*(znear*zfar)/neg_depth;
+	m.values[14]	= 2.0f * (znear * zfar) / neg_depth;
 	m.values[15]	= 0.0f;
 
 	return m;

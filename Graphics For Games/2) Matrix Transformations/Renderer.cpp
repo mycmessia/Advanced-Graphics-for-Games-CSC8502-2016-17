@@ -1,6 +1,7 @@
 #include "Renderer.h"
 
-Renderer::Renderer (Window &parent) : OGLRenderer (parent) {
+Renderer::Renderer (Window &parent) : OGLRenderer (parent) 
+{
 	triangle = Mesh::GenerateTriangle ();
 	camera = new Camera ();
 
@@ -20,9 +21,9 @@ Renderer::~Renderer () {
 	delete triangle;
 }
 
-void Renderer::SwitchToPerspective ()
+void Renderer::SwitchToPerspective (float fov)
 {
-	projMatrix = Matrix4::Perspective (1.0f, 10000.0f, (float) width / (float) height, 45.0f);
+	projMatrix = Matrix4::Perspective (1.0f, 10000.0f, (float) width / (float) height, fov);
 }
 
 void Renderer::SwitchToOrthographic ()
@@ -48,14 +49,14 @@ void Renderer::RenderScene ()
 		tempPos.y -= (i * 100.0f);
 
 		modelMatrix = Matrix4::Translation (tempPos) *
-			Matrix4::Rotation (rotation, Vector3 (0, 1, 0)) *
-			Matrix4::Scale (Vector3 (scale, scale, scale));
+					  Matrix4::Rotation (rotation, Vector3 (0, 1, 0)) *
+					  Matrix4::Scale (Vector3 (scale, scale, scale));
 
 		glUniformMatrix4fv (
 			glGetUniformLocation (currentShader->GetProgram (), "modelMatrix"),
 			1, 
 			false,
-			(float*)&modelMatrix
+			(float*) &modelMatrix
 		);
 
 		triangle->Draw ();

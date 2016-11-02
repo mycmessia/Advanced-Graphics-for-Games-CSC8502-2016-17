@@ -14,7 +14,13 @@ public:
 	void ChangeColor ();
 	static Mesh* GenerateTriangle ();
 
+	void SetTexture (GLuint tex) { texture = tex; }
+	GLuint GetTexture () { return texture; }
+
 protected:
+	GLuint texture;
+	Vector2* textureCoords;
+
 	void BufferData ();
 
 	GLuint arrayObject;
