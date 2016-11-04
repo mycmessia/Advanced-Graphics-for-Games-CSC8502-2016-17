@@ -2,7 +2,7 @@
 
 Renderer::Renderer(Window &parent) : OGLRenderer(parent) 
 {
-	triangle = Mesh::GenerateTriangle ();
+	triangle = Mesh::GenerateTriangle (1);
 
 	currentShader = new Shader (SHADERDIR"basicVertex.glsl", SHADERDIR"colourFragment.glsl");
 
@@ -26,7 +26,7 @@ void Renderer::RenderScene()
 
 	glUseProgram (currentShader->GetProgram());
 
-	//triangle->ChangeColor ();
+	triangle->ChangeColor ();
 
 	triangle->Draw ();
 

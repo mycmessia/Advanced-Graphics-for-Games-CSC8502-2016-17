@@ -15,8 +15,6 @@ Shader::Shader (string vFile, string fFile, string gFile)
 
 	glAttachShader (program, objects[SHADER_VERTEX]);
 	glAttachShader (program, objects[SHADER_FRAGMENT]);
-
-	SetDefaultAttributes ();
 }
 
 Shader::~Shader (void)
@@ -90,13 +88,6 @@ bool Shader::LoadShaderFile (string from, string &into)
 	cout << into << endl << endl;
 	cout << "Loaded shader text!" << endl << endl;
 	return true;
-}
-
-void Shader::SetDefaultAttributes ()
-{
-	//glBindAttribLocation (program, VERTEX_BUFFER, "position");
-	//glBindAttribLocation (program, COLOUR_BUFFER, "colour");
-	//glBindAttribLocation (program, TEXTURE_BUFFER, "texCoord");
 }
 
 bool Shader::LinkProgram ()

@@ -1,9 +1,7 @@
 #pragma once
 #include "OGLRenderer.h"
 
-enum MeshBuffer {
-	VERTEX_BUFFER, COLOUR_BUFFER, TEXTURE_BUFFER, MAX_BUFFER
-};
+#define MAX_BUFFER 3
 
 class Mesh {
 public:
@@ -12,8 +10,8 @@ public:
 
 	virtual void Draw ();
 	void ChangeColor ();
-	static Mesh* GenerateTriangle ();
-	static Mesh* GenerateQuad ();
+	static Mesh* GenerateTriangle (unsigned tutorial);
+	static Mesh* GenerateQuad (unsigned tutorial);
 
 	void SetTexture (GLuint tex) { texture = tex; }
 	GLuint GetTexture () { return texture; }

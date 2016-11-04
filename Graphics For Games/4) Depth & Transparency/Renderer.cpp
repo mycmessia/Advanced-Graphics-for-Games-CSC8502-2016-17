@@ -2,8 +2,8 @@
 
 Renderer :: Renderer (Window& parent) : OGLRenderer (parent) 
 {
-	meshes[0] = Mesh::GenerateQuad ();
-	meshes[1] = Mesh::GenerateTriangle ();
+	meshes[0] = Mesh::GenerateQuad (4);
+	meshes[1] = Mesh::GenerateTriangle (4);
 
 	meshes[0]->SetTexture (SOIL_load_OGL_texture (
 		TEXTUREDIR"brick.tga",
@@ -65,6 +65,8 @@ void Renderer::RenderScene ()
 			glGetUniformLocation (currentShader->GetProgram (), "modelMatrix"), 1, false,
 			(float *)& Matrix4::Translation (positions[i])
 		);
+
+		glBindTexture (GL_TEXTURE_2D, meshes[i]->GetTexture ());
 
 		meshes[i]->Draw ();
 	}

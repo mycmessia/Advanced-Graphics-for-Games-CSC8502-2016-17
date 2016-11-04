@@ -16,7 +16,6 @@ public:
 	bool LinkProgram ();
 
 protected:
-	void SetDefaultAttributes ();
 	bool LoadShaderFile (string from, string &into);
 	GLuint GenerateShader (string from, GLenum type);
 
