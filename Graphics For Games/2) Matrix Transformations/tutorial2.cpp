@@ -15,8 +15,8 @@ int main () {
 		return -1;
 	}
 
-	float scale		= 100.0f;
-	float rotation	= 0.0f;
+	float scale = 100.0f;
+	float rotation = 0.0f;
 	float fov = 45.0f;
 	Vector3 position (0, 0, -1500.0f);
 
@@ -27,7 +27,6 @@ int main () {
 
 		if (Window::GetKeyboard ()->KeyDown (KEYBOARD_2))
 		{
-			cout << "fov is: " << fov << endl;
 			renderer.SwitchToPerspective (fov);
 		}
 

@@ -4,7 +4,10 @@ Renderer::Renderer ( Window & parent ) : OGLRenderer ( parent )
 {
 	triangle = Mesh :: GenerateTriangle ();
 
-	triangle->SetTexture (SOIL_load_OGL_texture ("../../Textures/brick.tga",
+	triangle->SetTexture (SOIL_load_OGL_texture (TEXTUREDIR"brick.tga",
+	SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, 0));
+
+	triangle->SetTexture2 (SOIL_load_OGL_texture (TEXTUREDIR"Barren RedsDOT3.jpg",
 	SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, 0));
 
 	if (!triangle->GetTexture ()) 
@@ -12,7 +15,7 @@ Renderer::Renderer ( Window & parent ) : OGLRenderer ( parent )
 		return;
 	}
 
-	currentShader = new Shader (SHADERDIR"TexturedVertex.glsl", SHADERDIR"texturedfragment.glsl");
+	currentShader = new Shader (SHADERDIR"TexturedVertex.glsl", SHADERDIR"Texturedfragment.glsl");
 
 	if (!currentShader->LinkProgram ()) 
 	{
@@ -23,8 +26,16 @@ Renderer::Renderer ( Window & parent ) : OGLRenderer ( parent )
 
 	projMatrix = Matrix4 :: Orthographic (-1, 1, 1, -1, 1, -1);
 
-	filtering = true;	repeating = false;
-}Renderer::~Renderer (void) {	delete triangle ;}void Renderer::RenderScene () 
+	filtering = true;
+	repeating = false;
+}
+
+Renderer::~Renderer (void) 
+{
+	delete triangle ;
+}
+
+void Renderer::RenderScene () 
 {
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
@@ -32,7 +43,9 @@ Renderer::Renderer ( Window & parent ) : OGLRenderer ( parent )
 	
 	UpdateShaderMatrices ();
 	
-	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "diffuseTex"), 0);
+	//glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "diffuseTex"), 0);
+
+	//glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "diffuseTex2"), triangle->GetTexture2 ());
 	
 	triangle->Draw ();
 	
@@ -46,7 +59,9 @@ void Renderer :: UpdateTextureMatrix (float value)
 	Matrix4 popPos = Matrix4 :: Translation (Vector3 (-0.5f, -0.5f, 0));
 	Matrix4 rotation = Matrix4 :: Rotation (value, Vector3 (0, 0, 1));
 	textureMatrix = pushPos * rotation * popPos ;
-}void Renderer :: ToggleRepeating () 
+}
+
+void Renderer :: ToggleRepeating () 
 {
 	repeating = !repeating;
 
@@ -74,4 +89,4 @@ void Renderer :: ToggleFiltering ()
 					 filtering ? GL_LINEAR : GL_NEAREST);
 
 	glBindTexture (GL_TEXTURE_2D , 0);
-}
+}

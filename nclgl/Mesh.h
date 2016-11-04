@@ -13,13 +13,19 @@ public:
 	virtual void Draw ();
 	void ChangeColor ();
 	static Mesh* GenerateTriangle ();
+	static Mesh* GenerateQuad ();
 
 	void SetTexture (GLuint tex) { texture = tex; }
 	GLuint GetTexture () { return texture; }
 
+	void SetTexture2 (GLuint tex) { texture2 = tex; }
+	GLuint GetTexture2 () { return texture2; }
+
 protected:
 	GLuint texture;
+	GLuint texture2;
 	Vector2* textureCoords;
+	Vector2* textureCoords2;
 
 	void BufferData ();
 
