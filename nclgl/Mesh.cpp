@@ -2,7 +2,8 @@
 #include <cstdlib>
 #include "Mesh.h"
 
-Mesh::Mesh (void) {
+Mesh::Mesh (void)
+{
 	for (int i = 0; i < MAX_BUFFER; i++)
 	{
 		bufferObject[i] = 0;
@@ -51,7 +52,7 @@ Mesh* Mesh::GenerateQuad ()
 	m->textureCoords[2] = Vector2 (1.0f, 1.0f);
 	m->textureCoords[3] = Vector2 (1.0f, 0.0f);
 
-	for (int i = 0; i < 4; ++i) 
+	for (int i = 0; i < 4; ++i)
 	{
 		m->colours[i] = Vector4 (1.0f, 1.0f, 1.0f, 1.0f);
 	}
@@ -60,7 +61,7 @@ Mesh* Mesh::GenerateQuad ()
 	return m;
 }
 
-Mesh* Mesh::GenerateTriangle () 
+Mesh* Mesh::GenerateTriangle ()
 {
 	Mesh* m = new Mesh ();
 	m->numVertices = 3;
@@ -108,7 +109,7 @@ void Mesh::BufferData ()
 		glVertexAttribPointer (1, 4, GL_FLOAT, GL_FALSE, 0, 0);
 		glEnableVertexAttribArray (1);
 	}
-	
+
 	if (textureCoords)
 	{
 		glGenBuffers (1, &bufferObject[TEXTURE_BUFFER]);
@@ -125,17 +126,17 @@ void Mesh::BufferData ()
 void Mesh::ChangeColor ()
 {
 	void* change = glMapBuffer (GL_ARRAY_BUFFER, GL_READ_WRITE);
-	
-	float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-	float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-	float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-	
-	Vector4* changed_colours = new Vector4[3];
-	changed_colours[0] = Vector4(r, g, b, 1.0f);
-	changed_colours[1] = Vector4(r, g, b, 1.0f);
-	changed_colours[2] = Vector4(r, g, b, 1.0f);
 
-	memcpy(change, changed_colours, numVertices * sizeof(Vector4));
+	float r = static_cast <float> (rand ()) / static_cast <float> (RAND_MAX);
+	float g = static_cast <float> (rand ()) / static_cast <float> (RAND_MAX);
+	float b = static_cast <float> (rand ()) / static_cast <float> (RAND_MAX);
+
+	Vector4* changed_colours = new Vector4[3];
+	changed_colours[0] = Vector4 (r, g, b, 1.0f);
+	changed_colours[1] = Vector4 (r, g, b, 1.0f);
+	changed_colours[2] = Vector4 (r, g, b, 1.0f);
+
+	memcpy (change, changed_colours, numVertices * sizeof (Vector4));
 
 	delete[] changed_colours;
 
@@ -144,9 +145,7 @@ void Mesh::ChangeColor ()
 
 void Mesh::Draw ()
 {
-	glBindTexture (GL_TEXTURE_2D, texture);
 	glBindVertexArray (arrayObject);
 	glDrawArrays (type, 0, numVertices);
 	glBindVertexArray (0);
-	glBindTexture (GL_TEXTURE_2D, 0);
 }
