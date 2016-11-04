@@ -1,6 +1,6 @@
 #include "Renderer.h"
 
-Renderer :: Renderer (Window& parent) : OGLRenderer (parent) 
+Renderer::Renderer (Window& parent) : OGLRenderer (parent)
 {
 	meshes[0] = Mesh::GenerateQuad (4);
 	meshes[1] = Mesh::GenerateTriangle (4);
@@ -20,7 +20,7 @@ Renderer :: Renderer (Window& parent) : OGLRenderer (parent)
 
 	currentShader = new Shader (SHADERDIR"TexturedVertex.glsl", SHADERDIR"TexturedFragment.glsl");
 
-	if (!currentShader->LinkProgram ()) 
+	if (!currentShader->LinkProgram ())
 	{
 		return;
 	}
@@ -30,7 +30,7 @@ Renderer :: Renderer (Window& parent) : OGLRenderer (parent)
 	blendMode = 0;
 	modifyObject = true;
 
-	projMatrix = Matrix4 :: Perspective (1.0f, 100.0f, (float) width / (float) height, 45.0f);
+	projMatrix = Matrix4::Perspective (1.0f, 100.0f, (float)width / (float)height, 45.0f);
 
 	init = true;
 }
@@ -41,30 +41,30 @@ Renderer::~Renderer (void)
 	delete meshes[1];
 }
 
-void Renderer::RenderScene () 
+void Renderer::RenderScene ()
 {
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glUseProgram (currentShader->GetProgram ());
 
 	glUniformMatrix4fv (glGetUniformLocation (currentShader->GetProgram (),
-	"textureMatrix"), 1, false, (float *)&textureMatrix);
+						"textureMatrix"), 1, false, (float *)&textureMatrix);
 
 	glUniformMatrix4fv (glGetUniformLocation (currentShader->GetProgram (),
-	"viewMatrix"), 1, false, (float *)&viewMatrix);
+						"viewMatrix"), 1, false, (float *)&viewMatrix);
 
 	glUniformMatrix4fv (glGetUniformLocation (currentShader->GetProgram (),
-	"projMatrix"), 1, false, (float *)&projMatrix);
+						"projMatrix"), 1, false, (float *)&projMatrix);
 
 	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "diffuseTex"), 0);
 
 	glActiveTexture (GL_TEXTURE0);
 
-	for (unsigned int i = 0; i < 2; ++ i) 
+	for (unsigned int i = 0; i < 2; ++i)
 	{
 		glUniformMatrix4fv (
 			glGetUniformLocation (currentShader->GetProgram (), "modelMatrix"), 1, false,
 			(float *)& Matrix4::Translation (positions[i])
-		);
+			);
 
 		glBindTexture (GL_TEXTURE_2D, meshes[i]->GetTexture ());
 
@@ -75,35 +75,37 @@ void Renderer::RenderScene ()
 	SwapBuffers ();
 }
 
-void Renderer::ToggleObject () 
+void Renderer::ToggleObject ()
 {
 	modifyObject = !modifyObject;
 }
 
-void Renderer::MoveObject (float by) 
+void Renderer::MoveObject (float by)
 {
-	positions[(int) modifyObject].z += by;
+	positions[(int)modifyObject].z += by;
 }
 
-void Renderer::ToggleDepth () {
+void Renderer::ToggleDepth ()
+{
 	usingDepth = !usingDepth;
 	usingDepth ? glEnable (GL_DEPTH_TEST) : glDisable (GL_DEPTH_TEST);
 }
 
-void Renderer::ToggleAlphaBlend () {
+void Renderer::ToggleAlphaBlend ()
+{
 	usingAlpha = !usingAlpha;
 	usingAlpha ? glEnable (GL_BLEND) : glDisable (GL_BLEND);
 }
 
-void Renderer::ToggleBlendMode () 
+void Renderer::ToggleBlendMode ()
 {
 	blendMode = (blendMode + 1) % 4;
 
 	switch (blendMode)
 	{
-		case (0): glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); break;
-		case (1): glBlendFunc (GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR); break;
-		case (2): glBlendFunc (GL_ONE, GL_ZERO); break;
-		case (3): glBlendFunc (GL_SRC_ALPHA, GL_ONE); break;
+		case (0) : glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); break;
+		case (1) : glBlendFunc (GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR); break;
+		case (2) : glBlendFunc (GL_ONE, GL_ZERO); break;
+		case (3) : glBlendFunc (GL_SRC_ALPHA, GL_ONE); break;
 	}
 }

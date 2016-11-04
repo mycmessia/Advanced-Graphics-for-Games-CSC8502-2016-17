@@ -68,9 +68,9 @@ Mesh* Mesh::GenerateTriangle (unsigned tutorial)
 	m->numVertices = 3;
 
 	m->vertices = new Vector3[m->numVertices];
-	m->vertices[0] = Vector3 (-0.9f, -0.9f, 0.0f);
-	m->vertices[1] = Vector3 (0.85f, -0.9f, 0.0f);
-	m->vertices[2] = Vector3 (-0.9f, 0.85f, 0.0f);
+	m->vertices[0] = Vector3 (-0.5f, -0.5f, 0.0f);
+	m->vertices[1] = Vector3 (0.0f, 0.5f, 0.0f);
+	m->vertices[2] = Vector3 (0.5f, -0.5f, 0.0f);
 
 	m->colours = new Vector4[m->numVertices];
 	m->colours[0] = Vector4 (0.5f, 0.0f, 0.0f, 1.0f);

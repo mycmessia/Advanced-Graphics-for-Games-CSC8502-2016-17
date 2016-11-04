@@ -15,7 +15,7 @@ Renderer::Renderer (Window & parent) : OGLRenderer (parent)
 		return;
 	}
 
-	currentShader = new Shader (SHADERDIR"TexturedVertex.glsl", SHADERDIR"Texturedfragment.glsl");
+	currentShader = new Shader (SHADERDIR"texturedVertex.glsl", SHADERDIR"texturedfragment.glsl");
 
 	if (!currentShader->LinkProgram ())
 	{
@@ -49,11 +49,17 @@ void Renderer::RenderScene ()
 	glBindTexture (GL_TEXTURE_2D, triangle->GetTexture ());
 
 	GLint tex2UniformLoc = glGetUniformLocation (currentShader->GetProgram (), "diffuseTex2");
-	glUniform1i (tex2UniformLoc, 1);
+	glUniform1i (tex2UniformLoc, 1);	// this 1 means GL_TEXTURE 1 next line
 	glActiveTexture (GL_TEXTURE1);
 	glBindTexture (GL_TEXTURE_2D, triangle->GetTexture2 ());
 
 	triangle->Draw ();
+
+	glActiveTexture (GL_TEXTURE0);
+	glBindTexture (GL_TEXTURE_2D, 0);
+
+	glActiveTexture (GL_TEXTURE1);
+	glBindTexture (GL_TEXTURE_2D, 0);
 
 	glUseProgram (0);
 	SwapBuffers ();
@@ -71,6 +77,7 @@ void Renderer::ToggleRepeating ()
 {
 	repeating = !repeating;
 
+	glActiveTexture (GL_TEXTURE0);
 	glBindTexture (GL_TEXTURE_2D, triangle->GetTexture ());
 
 	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,		//x axis
@@ -79,6 +86,19 @@ void Renderer::ToggleRepeating ()
 	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,		//y axis
 					 repeating ? GL_REPEAT : GL_CLAMP);
 
+	glActiveTexture (GL_TEXTURE0);
+	glBindTexture (GL_TEXTURE_2D, 0);
+
+	glActiveTexture (GL_TEXTURE1);
+	glBindTexture (GL_TEXTURE_2D, triangle->GetTexture2 ());
+
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,		//x axis
+					 repeating ? GL_REPEAT : GL_CLAMP);
+
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,		//y axis
+					 repeating ? GL_REPEAT : GL_CLAMP);
+
+	glActiveTexture (GL_TEXTURE1);
 	glBindTexture (GL_TEXTURE_2D, 0);
 }
 
@@ -86,6 +106,7 @@ void Renderer::ToggleFiltering ()
 {
 	filtering = !filtering;
 
+	glActiveTexture (GL_TEXTURE0);
 	glBindTexture (GL_TEXTURE_2D, triangle->GetTexture ());
 
 	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
@@ -94,5 +115,18 @@ void Renderer::ToggleFiltering ()
 	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
 					 filtering ? GL_LINEAR : GL_NEAREST);
 
+	glActiveTexture (GL_TEXTURE0);
+	glBindTexture (GL_TEXTURE_2D, 0);
+
+	glActiveTexture (GL_TEXTURE1);
+	glBindTexture (GL_TEXTURE_2D, triangle->GetTexture2 ());
+
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+					 filtering ? GL_LINEAR : GL_NEAREST);
+
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+					 filtering ? GL_LINEAR : GL_NEAREST);
+
+	glActiveTexture (GL_TEXTURE1);
 	glBindTexture (GL_TEXTURE_2D, 0);
 }
