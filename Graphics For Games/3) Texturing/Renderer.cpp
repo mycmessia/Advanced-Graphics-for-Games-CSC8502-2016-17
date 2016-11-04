@@ -86,7 +86,6 @@ void Renderer::ToggleRepeating ()
 	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,		//y axis
 					 repeating ? GL_REPEAT : GL_CLAMP);
 
-	glActiveTexture (GL_TEXTURE0);
 	glBindTexture (GL_TEXTURE_2D, 0);
 
 	glActiveTexture (GL_TEXTURE1);
@@ -98,7 +97,6 @@ void Renderer::ToggleRepeating ()
 	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,		//y axis
 					 repeating ? GL_REPEAT : GL_CLAMP);
 
-	glActiveTexture (GL_TEXTURE1);
 	glBindTexture (GL_TEXTURE_2D, 0);
 }
 
@@ -115,7 +113,6 @@ void Renderer::ToggleFiltering ()
 	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
 					 filtering ? GL_LINEAR : GL_NEAREST);
 
-	glActiveTexture (GL_TEXTURE0);
 	glBindTexture (GL_TEXTURE_2D, 0);
 
 	glActiveTexture (GL_TEXTURE1);
@@ -127,6 +124,5 @@ void Renderer::ToggleFiltering ()
 	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
 					 filtering ? GL_LINEAR : GL_NEAREST);
 
-	glActiveTexture (GL_TEXTURE1);
 	glBindTexture (GL_TEXTURE_2D, 0);
 }
