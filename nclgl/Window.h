@@ -24,53 +24,66 @@ Description:Creates and handles the Window, including the initialisation of the 
 
 class OGLRenderer;
 
-class Window	{
+class Window
+{
 public:
-	Window(std::string title = "OpenGL Framework", int sizeX = 800, int sizeY = 600, bool fullScreen = false);
-	~Window(void);
+	Window (std::string title = "OpenGL Framework", int sizeX = 800, int sizeY = 600, bool fullScreen = false);
+	~Window (void);
 
-	bool	UpdateWindow();	
+	bool UpdateWindow ();
 
-	void	SetRenderer(OGLRenderer* r);
+	void SetRenderer (OGLRenderer* r);
 
-	HWND	GetHandle();
+	HWND GetHandle ();
 
-	bool	HasInitialised();
+	bool HasInitialised ();
 
-	void	LockMouseToWindow(bool lock);
-	void	ShowOSPointer(bool show);
+	void LockMouseToWindow (bool lock);
+	void ShowOSPointer (bool show);
 
-	Vector2	GetScreenSize() {return size;};
+	Vector2	GetScreenSize ()
+	{
+		return size;
+	};
 
-	static Keyboard*	GetKeyboard()	{return keyboard;}
-	static Mouse*		GetMouse()		{return mouse;}
+	static Keyboard* GetKeyboard ()
+	{
+		return keyboard;
+	}
+	static Mouse* GetMouse ()
+	{
+		return mouse;
+	}
 
-	GameTimer*   GetTimer()		{return timer;}
+	GameTimer* GetTimer ()
+	{
+		return timer;
+	}
 
 protected:
-	void	CheckMessages(MSG &msg);
-	static LRESULT CALLBACK WindowProc(HWND hWnd,UINT message,WPARAM wParam,LPARAM lParam);
+	void CheckMessages (MSG &msg);
+	static LRESULT CALLBACK WindowProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-	HWND			windowHandle;
+	HWND windowHandle;
 
-	static Window*		window;
-	static Keyboard*	keyboard;
-	static Mouse*		mouse;
+	static Window* window;
+	static Keyboard* keyboard;
+	static Mouse* mouse;
 
-	GameTimer*	timer;
+	GameTimer* timer;
 
-	OGLRenderer*		renderer;
+	OGLRenderer* renderer;
 
-	bool				forceQuit;
-	bool				init;
-	bool				fullScreen;
-	bool				lockMouse;
-	bool				showMouse;
+	bool forceQuit;
+	bool init;
+	bool fullScreen;
+	bool lockMouse;
+	bool showMouse;
 
-	Vector2				position;
-	Vector2				size;
+	Vector2 position;
+	Vector2	size;
 
-	float				elapsedMS;
+	float elapsedMS;
 
-	bool				mouseLeftWindow;
+	bool mouseLeftWindow;
 };

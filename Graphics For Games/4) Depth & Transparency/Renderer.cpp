@@ -18,7 +18,7 @@ Renderer::Renderer (Window& parent) : OGLRenderer (parent)
 	positions[0] = Vector3 (0, 0, -5); //5 units away from the viewpoint
 	positions[1] = Vector3 (0, 0, -5);
 
-	currentShader = new Shader (SHADERDIR"TexturedVertex.glsl", SHADERDIR"TexturedFragment.glsl");
+	currentShader = new Shader (SHADERDIR"texturedVertex.glsl", SHADERDIR"texturedFragment.glsl");
 
 	if (!currentShader->LinkProgram ())
 	{
@@ -57,14 +57,14 @@ void Renderer::RenderScene ()
 
 	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "diffuseTex"), 0);
 
-	glActiveTexture (GL_TEXTURE0);
+	//glActiveTexture (GL_TEXTURE0);
 
 	for (unsigned int i = 0; i < 2; ++i)
 	{
 		glUniformMatrix4fv (
 			glGetUniformLocation (currentShader->GetProgram (), "modelMatrix"), 1, false,
 			(float *)& Matrix4::Translation (positions[i])
-			);
+		);
 
 		glBindTexture (GL_TEXTURE_2D, meshes[i]->GetTexture ());
 
