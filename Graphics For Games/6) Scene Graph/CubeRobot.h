@@ -7,7 +7,7 @@ class CubeRobot : public SceneNode
 public:
 	CubeRobot (void);
 	~CubeRobot (void) {};
-	virtual void Update (float msec);
+	virtual void Update (float msec) override;
 
 	static void CreateCube ()
 	{

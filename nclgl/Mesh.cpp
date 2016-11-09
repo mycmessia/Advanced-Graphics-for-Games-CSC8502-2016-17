@@ -120,7 +120,6 @@ void Mesh::BufferData ()
 		glEnableVertexAttribArray (2);
 	}
 
-
 	glBindVertexArray (0);
 }
 
@@ -146,7 +145,7 @@ void Mesh::ChangeColor ()
 
 void Mesh::Draw ()
 {
-	glBindVertexArray (arrayObject);
-	glDrawArrays (type, 0, numVertices);
-	glBindVertexArray (0);
+	glBindVertexArray(arrayObject);
+	glDrawArrays(type, 0, numVertices);
+	glBindVertexArray(0);
 }

@@ -52,7 +52,7 @@ OGLRenderer::OGLRenderer (Window &window)
 	pfd.nSize = sizeof (PIXELFORMATDESCRIPTOR);
 	pfd.nVersion = 1;
 	pfd.dwFlags = PFD_DOUBLEBUFFER | PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW;   //It must be double buffered, it must support OGL(!), and it must allow us to draw to it...
-	pfd.iPixelType = PFD_TYPE_RGBA;	//We want our front / back buffer to have 4 channels!
+	pfd.iPixelType = PFD_TYPE_RGBA;		//We want our front / back buffer to have 4 channels!
 	pfd.cColorBits = 32;				//4 channels of 8 bits each!
 	pfd.cDepthBits = 24;				//24 bit depth buffer
 	pfd.cStencilBits = 8;				//plus an 8 bit stencil buffer

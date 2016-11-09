@@ -69,6 +69,8 @@ void Renderer::RenderScene ()
 		glBindTexture (GL_TEXTURE_2D, meshes[i]->GetTexture ());
 
 		meshes[i]->Draw ();
+
+		glBindTexture (GL_TEXTURE_2D, 0);
 	}
 
 	glUseProgram (0);

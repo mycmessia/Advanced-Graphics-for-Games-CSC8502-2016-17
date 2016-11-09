@@ -41,7 +41,7 @@ void Renderer::RenderScene ()
 
 	UpdateShaderMatrices ();
 
-	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "diffuseTex"), 1);
+	//glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "diffuseTex"), 1);
 
 	DrawNode (root);
 
@@ -50,7 +50,7 @@ void Renderer::RenderScene ()
 	SwapBuffers ();
 }
 
-void Renderer::DrawNode (SceneNode * n)
+void Renderer::DrawNode (SceneNode* n)
 {
 	if (n->GetMesh ())
 	{
@@ -65,7 +65,7 @@ void Renderer::DrawNode (SceneNode * n)
 		glUniform1i (glGetUniformLocation (currentShader->GetProgram (),
 					 "useTexture"), (int)n->GetMesh ()->GetTexture ());
 
-		n->Draw (*this);
+		n->Draw ();
 	}
 
 	for (vector<SceneNode *>::const_iterator

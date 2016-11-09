@@ -7,12 +7,12 @@ class CubeRobot : public SceneNode
 public:
 	CubeRobot (void);
 	~CubeRobot (void) {};
-	virtual void Update (float msec);
+	virtual void Update (float msec) override;
 
 	static void CreateCube ()
 	{
 		OBJMesh* m = new OBJMesh ();
-		m -> LoadOBJMesh (MESHDIR"cube.obj");
+		m->LoadOBJMesh (MESHDIR"cube.obj");
 		cube = m;
 	}
 

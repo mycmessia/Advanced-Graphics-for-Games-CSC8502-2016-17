@@ -6,6 +6,8 @@ SceneNode::SceneNode (Mesh* mesh, Vector4 colour)
 	this->colour = colour;
 	parent = NULL;
 	modelScale = Vector3 (1, 1, 1);
+	boundingRadius = 1.0f;
+	distanceFromCamera = 0.0f;
 }
 
 SceneNode::~SceneNode (void)
@@ -18,9 +20,16 @@ SceneNode::~SceneNode (void)
 
 void SceneNode::AddChild (SceneNode* s)
 {
-	children.push_back (s);
-	s->parent = this;
-}void SceneNode::Draw (const OGLRenderer& r)
+	if (s == this)
+	{
+		std::cout << "Can not add a SceneNode as a child of itself." << std::endl;
+	}
+	else
+	{	
+		children.push_back (s);
+		s->parent = this;
+	}
+}void SceneNode::Draw ()
 {
 	if (mesh)
 	{
