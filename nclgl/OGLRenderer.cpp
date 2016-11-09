@@ -157,7 +157,7 @@ OGLRenderer::OGLRenderer (Window &window)
 
 	if (!debugDrawingRenderer)
 	{
-		debugDrawShader = new Shader (SHADERDIR"/DebugVertex.glsl", SHADERDIR"DebugFragment.glsl");
+		debugDrawShader = new Shader (SHADERDIR"DebugVertex.glsl", SHADERDIR"DebugFragment.glsl");
 		orthoDebugData = new DebugDrawData ();
 		perspectiveDebugData = new DebugDrawData ();
 		debugDrawingRenderer = this;

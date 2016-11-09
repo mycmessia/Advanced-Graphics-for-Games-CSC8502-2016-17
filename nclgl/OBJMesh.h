@@ -2,11 +2,11 @@
 Class:OBJMesh
 Implements:Mesh, MD5MeshInstance
 Author:Rich Davison	<richard.davison4@newcastle.ac.uk>
-Description: Implementation of the Wavefront OBJ mesh format. 
+Description: Implementation of the Wavefront OBJ mesh format.
 
 This was going to be a full tutorial, and then I implemented it and was
-reminded of how horrific OBJ files can be, so just dumped the code in the 
-framework, instead. 
+reminded of how horrific OBJ files can be, so just dumped the code in the
+framework, instead.
 
 You'll very quickly find OBJ meshes that can't be loaded by this loader.
 
@@ -17,11 +17,11 @@ should be trivial to add in, n-sided polygons should be OK if they are convex
 Some OBJ meshes use negative indices, which won't work.
 
 In both cases, loading the OBJ into Blender or maybe Milkshape, and exporting
-them out as OBJs again might create a file more likely to load. 
+them out as OBJs again might create a file more likely to load.
 
 OBJ files are ok for simple geometry (the tutorial series uses them for 2
 slightly different cubes, and an icosphere), but generally don't work very
-well for 'big' geometry. 
+well for 'big' geometry.
 
 The simple loader doesn't do anything fancy with indices - have fun trying
 to get that working!
@@ -47,10 +47,10 @@ to see a rabbit.
 		   *     W     *
 			 **     **
 			   *****
--_-_-_-_-_-_-_,------,   
+-_-_-_-_-_-_-_,------,
 _-_-_-_-_-_-_-|   /\_/\   NYANYANYAN
 -_-_-_-_-_-_-~|__( ^ .^) /
-_-_-_-_-_-_-_-""  ""   
+_-_-_-_-_-_-_-""  ""
 
 *//////////////////////////////////////////////////////////////////////////////
 
@@ -110,11 +110,12 @@ time lighting tutorial, uncomment both OBJ_USE_NORMALS and OBJ_USE_TANGENTS_BUMP
 
 
 /*
-OBJSubMesh structs are used to temporarily keep the data loaded 
+OBJSubMesh structs are used to temporarily keep the data loaded
 in from the OBJ files, before being parsed into a series of
 Meshes
 */
-struct OBJSubMesh {
+struct OBJSubMesh
+{
 	std::vector<int> texIndices;
 	std::vector<int> vertIndices;
 	std::vector<int> normIndices;
@@ -124,33 +125,40 @@ struct OBJSubMesh {
 	string mtlSrc;
 };
 
-struct MTLInfo {
+struct MTLInfo
+{
 	string bump;
 	string diffuse;
 
 	GLuint bumpNum;
 	GLuint diffuseNum;
 
-	MTLInfo() {
-		bumpNum		= 0;
-		diffuseNum	= 0;
+	MTLInfo ()
+	{
+		bumpNum = 0;
+		diffuseNum = 0;
 	}
 	//this is all we care about...
 };
 
-class OBJMesh : public Mesh, public ChildMeshInterface	{
+class OBJMesh : public Mesh, public ChildMeshInterface
+{
 public:
-	OBJMesh(void){};
-	OBJMesh(std::string filename){LoadOBJMesh(filename);};
-	~OBJMesh(void){};
-	bool	LoadOBJMesh(std::string filename);
+	OBJMesh (void) {};
+	OBJMesh (std::string filename)
+	{
+		LoadOBJMesh (filename);
+	};
+	~OBJMesh (void) {};
 
-	virtual void Draw();
+	bool LoadOBJMesh (std::string filename);
+
+	virtual void Draw ();
 
 protected:
-	void	SetTexturesFromMTL(string &mtlFile, string &mtlType);
+	void SetTexturesFromMTL (string &mtlFile, string &mtlType);
 
-	void	FixTextures(MTLInfo &info);
+	void FixTextures (MTLInfo &info);
 
 	map <string, MTLInfo> materials;
 };
