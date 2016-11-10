@@ -18,6 +18,9 @@ Mesh::Mesh (void)
 	texture = 0;
 	textureCoords = nullptr;
 	textureCoords2 = nullptr;
+	
+	indices = nullptr;
+	numIndices = 0;
 
 	srand (static_cast <unsigned> (time (0)));
 }
@@ -31,6 +34,7 @@ Mesh::~Mesh (void)
 
 	glDeleteTextures (1, &texture);
 	delete[] textureCoords;
+	delete[] indices;
 }
 
 Mesh* Mesh::GenerateQuad (unsigned tutorial)
@@ -95,17 +99,17 @@ void Mesh::BufferData ()
 {
 	glBindVertexArray (arrayObject);
 
-	glGenBuffers (1, &bufferObject[0]);
-	glBindBuffer (GL_ARRAY_BUFFER, bufferObject[0]);
-	glBufferData (GL_ARRAY_BUFFER, numVertices * sizeof (Vector4), vertices, GL_STATIC_DRAW);
+	glGenBuffers (1, &bufferObject[VERTEX_BUFFER]);
+	glBindBuffer (GL_ARRAY_BUFFER, bufferObject[VERTEX_BUFFER]);
+	glBufferData (GL_ARRAY_BUFFER, numVertices * sizeof (Vector3), vertices, GL_STATIC_DRAW);
 	// first parameter is the layout location in vertex shader glsl #version >= 420 
 	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray (0);
 
 	if (colours)
 	{
-		glGenBuffers (1, &bufferObject[1]);
-		glBindBuffer (GL_ARRAY_BUFFER, bufferObject[1]);
+		glGenBuffers (1, &bufferObject[COLOUR_BUFFER]);
+		glBindBuffer (GL_ARRAY_BUFFER, bufferObject[COLOUR_BUFFER]);
 		glBufferData (GL_ARRAY_BUFFER, numVertices * sizeof (Vector4), colours, GL_STATIC_DRAW);
 		glVertexAttribPointer (1, 4, GL_FLOAT, GL_FALSE, 0, 0);
 		glEnableVertexAttribArray (1);
@@ -113,11 +117,18 @@ void Mesh::BufferData ()
 
 	if (textureCoords)
 	{
-		glGenBuffers (1, &bufferObject[2]);
-		glBindBuffer (GL_ARRAY_BUFFER, bufferObject[2]);
+		glGenBuffers (1, &bufferObject[TEXTURE_BUFFER]);
+		glBindBuffer (GL_ARRAY_BUFFER, bufferObject[TEXTURE_BUFFER]);
 		glBufferData (GL_ARRAY_BUFFER, numVertices * sizeof (Vector2), textureCoords, GL_STATIC_DRAW);
 		glVertexAttribPointer (2, 2, GL_FLOAT, GL_FALSE, 0, 0);
 		glEnableVertexAttribArray (2);
+	}
+
+	if (indices)
+	{
+		glGenBuffers (1, &bufferObject[INDEX_BUFFER]);
+		glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, bufferObject[INDEX_BUFFER]);
+		glBufferData (GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof (GLuint), indices, GL_STATIC_DRAW);
 	}
 
 	glBindVertexArray (0);
@@ -146,6 +157,14 @@ void Mesh::ChangeColor ()
 void Mesh::Draw ()
 {
 	glBindVertexArray(arrayObject);
-	glDrawArrays(type, 0, numVertices);
+
+	if (bufferObject[3])
+	{
+		glDrawElements (type, numIndices, GL_UNSIGNED_INT, 0);
+	}
+	else
+	{
+		glDrawArrays(type, 0, numVertices);
+	}
 	glBindVertexArray(0);
 }

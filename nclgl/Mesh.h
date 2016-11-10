@@ -1,7 +1,9 @@
 #pragma once
 #include "OGLRenderer.h"
 
-#define MAX_BUFFER 3
+enum MeshBuffer {
+	VERTEX_BUFFER, COLOUR_BUFFER, TEXTURE_BUFFER, INDEX_BUFFER, MAX_BUFFER
+};
 
 class Mesh {
 public:
@@ -34,4 +36,7 @@ protected:
 
 	Vector3* vertices;
 	Vector4* colours;
+
+	GLuint numIndices;
+	unsigned int* indices;
 };

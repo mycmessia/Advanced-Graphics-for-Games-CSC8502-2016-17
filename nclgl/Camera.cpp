@@ -47,12 +47,12 @@ void Camera::UpdateCamera (float msec)
 		position -= Matrix4::Rotation (yaw, Vector3 (0, 1, 0)) * Vector3 (-1, 0, 0) * msec;
 	}
 
-	if (Window::GetKeyboard ()->KeyDown (KEYBOARD_SHIFT))
+	if (Window::GetKeyboard ()->KeyDown (KEYBOARD_1))
 	{
 		position.y += msec;
 	}
 
-	if (Window::GetKeyboard ()->KeyDown (KEYBOARD_SPACE))
+	if (Window::GetKeyboard ()->KeyDown (KEYBOARD_2))
 	{
 		position.y -= msec;
 	}
