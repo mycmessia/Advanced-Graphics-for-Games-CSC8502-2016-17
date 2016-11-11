@@ -18,7 +18,7 @@ Mesh::Mesh (void)
 	texture = 0;
 	textureCoords = nullptr;
 	textureCoords2 = nullptr;
-	
+
 	indices = nullptr;
 	numIndices = 0;
 
@@ -156,15 +156,35 @@ void Mesh::ChangeColor ()
 
 void Mesh::Draw ()
 {
-	glBindVertexArray(arrayObject);
+	glBindVertexArray (arrayObject);
 
-	if (bufferObject[3])
+	if (GetTexture ())
+	{
+		glActiveTexture (GL_TEXTURE0);
+		glBindTexture (GL_TEXTURE_2D, GetTexture ());
+	}
+
+	if (GetTexture2 ())
+	{
+		glActiveTexture (GL_TEXTURE1);
+		glBindTexture (GL_TEXTURE_2D, GetTexture2 ());
+	}
+
+	if (bufferObject[INDEX_BUFFER])
 	{
 		glDrawElements (type, numIndices, GL_UNSIGNED_INT, 0);
 	}
 	else
 	{
-		glDrawArrays(type, 0, numVertices);
+		glDrawArrays (type, 0, numVertices);
 	}
-	glBindVertexArray(0);
+
+	glActiveTexture (GL_TEXTURE0);
+	glBindTexture (GL_TEXTURE_2D, 0);
+
+	glActiveTexture (GL_TEXTURE1);
+	glBindTexture (GL_TEXTURE_2D, 0);
+
+	glBindTexture (GL_TEXTURE_2D, 0);
+	glBindVertexArray (0);
 }

@@ -13,7 +13,7 @@ _-_-_-_-_-_-_-""  ""
 #pragma once
 
 #define WEEK_2_CODE
-//#define USE_MD5MESH
+#define USE_MD5MESH
 //#define WEEK_3_CODE
 
 //It's pi(ish)...

@@ -45,21 +45,11 @@ void Renderer::RenderScene ()
 
 	GLint tex1UniformLoc = glGetUniformLocation (currentShader->GetProgram (), "diffuseTex");
 	glUniform1i (tex1UniformLoc, 0);
-	glActiveTexture (GL_TEXTURE0);
-	glBindTexture (GL_TEXTURE_2D, triangle->GetTexture ());
 
 	GLint tex2UniformLoc = glGetUniformLocation (currentShader->GetProgram (), "diffuseTex2");
 	glUniform1i (tex2UniformLoc, 1);	// this 1 means GL_TEXTURE 1 next line
-	glActiveTexture (GL_TEXTURE1);
-	glBindTexture (GL_TEXTURE_2D, triangle->GetTexture2 ());
 
 	triangle->Draw ();
-
-	glActiveTexture (GL_TEXTURE0);
-	glBindTexture (GL_TEXTURE_2D, 0);
-
-	glActiveTexture (GL_TEXTURE1);
-	glBindTexture (GL_TEXTURE_2D, 0);
 
 	glUseProgram (0);
 	SwapBuffers ();
