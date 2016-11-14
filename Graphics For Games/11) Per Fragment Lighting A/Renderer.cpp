@@ -24,17 +24,18 @@ Renderer::Renderer (Window& parent) : OGLRenderer (parent)
 		return;
 	}
 
-	SetTextureRepeating (heightMap->GetTexture (), true);	if (lightVector.size () < Renderer::MAX_LIGHT_COUNT)	{		lightVector.push_back (new Light (
-			Vector3 ((RAW_HEIGHT * HEIGHTMAP_X / 2.0f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z / 2.0f)),
-			Vector4 (1, 0, 0, 1), 			(RAW_WIDTH * HEIGHTMAP_X) / 2.0f)		);	}
+	SetTextureRepeating (heightMap->GetTexture (), true);
+	AddLight (
+		Vector3 ((RAW_HEIGHT * HEIGHTMAP_X / 2.0f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z / 2.0f)),
+		Vector4 (1, 0, 0, 1), 
+		(RAW_WIDTH * HEIGHTMAP_X) / 2.0f
+	);
 
-	//if (lightVector.size () < Renderer::MAX_LIGHT_COUNT)	//{	//	lightVector.push_back (new Light (
-	//		Vector3 ((RAW_HEIGHT * HEIGHTMAP_X / 2.0f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z / 2.0f)),
-	//		Vector4 (0, 0, 1, 1), 	//		(RAW_WIDTH * HEIGHTMAP_X) / 2.0f)	//	);	//}
-
-	//if (lightVector.size () < Renderer::MAX_LIGHT_COUNT)	//{	//	lightVector.push_back (new Light (
-	//		Vector3 ((RAW_HEIGHT * HEIGHTMAP_X / 2.0f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z / 2.0f)),
-	//		Vector4 (0, 1, 0, 1), 	//		(RAW_WIDTH * HEIGHTMAP_X) / 2.0f)	//	);	//}
+	AddLight (
+		Vector3 ((RAW_HEIGHT * HEIGHTMAP_X / 2.0f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z / 2.0f)),
+		Vector4 (1, 0, 1, 1), 
+		(RAW_WIDTH * HEIGHTMAP_X) / 2.0f
+	);
 
 	for (unsigned i = 0; i < lightVector.size (); i++)
 	{
@@ -108,4 +109,4 @@ void Renderer::UpdateScene (float msec)
 	glUseProgram (0);
 
 	SwapBuffers ();
-}
+}void Renderer::AddLight (Vector3 position, Vector4 colour, float radius){	if (lightVector.size () < Renderer::MAX_LIGHT_COUNT)	{		lightVector.push_back (new Light (position, colour, radius));	}}

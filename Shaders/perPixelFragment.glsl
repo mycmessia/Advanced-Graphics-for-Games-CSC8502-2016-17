@@ -24,17 +24,28 @@ void main (void)
 {
     vec4 diffuse = texture (diffuseTex, IN.texCoord);
     vec3 viewDir = normalize (cameraPos - IN.worldPos);
+    int shininess = 50; // the bigger, the affect of light less
 
     for (int i = 0; i < lightCount; i++)
     {
+        // Calc a direction from this frag to light
         vec3 incident = normalize (lightPos[i] - IN.worldPos);
+
+        // Calc angle between incident and normal
         float lambert = max (0.0, dot (incident, IN.normal));
+
+        // Calc distance from light to this frag
         float dist = length (lightPos[i] - IN.worldPos);
+
+        // Clac if the light can affect this frag
         float atten = 1.0 - clamp (dist / lightRadius[i], 0.0, 1.0);
 
+        // Calc a direction from camera to light
         vec3 halfDir = normalize (incident - viewDir);
+
         float rFactor = max (0.0, dot (halfDir, IN.normal));
-        float sFactor = pow (rFactor, 50.0);
+
+        float sFactor = pow (rFactor, shininess);
         vec3 colour = (diffuse.rgb * lightColour[i].rgb);
         colour += (lightColour[i].rgb * sFactor) * 0.33;
 

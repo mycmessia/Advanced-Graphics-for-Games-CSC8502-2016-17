@@ -25,4 +25,6 @@ protected:
 	Vector4 lightColour[MAX_LIGHT_COUNT];
 	Vector3 lightPos[MAX_LIGHT_COUNT];
 	GLfloat lightRadius[MAX_LIGHT_COUNT];
+
+	void AddLight (Vector3 position, Vector4 colour, float radius);
 };
