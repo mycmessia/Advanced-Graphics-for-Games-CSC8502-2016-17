@@ -6,12 +6,13 @@ Renderer::Renderer (Window& parent) : OGLRenderer (parent)
 		RAW_WIDTH * HEIGHTMAP_X / 2.0f, 500, RAW_HEIGHT * HEIGHTMAP_Z));
 
 	heightMap = new HeightMap (TEXTUREDIR"terrain.raw");
+	heightMap->SetTexture (
+		SOIL_load_OGL_texture (TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO,
+		SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS)
+	);
+
 	currentShader = new Shader (SHADERDIR"PerPixelVertex.glsl",
 								SHADERDIR"PerPixelFragment.glsl");
-
-	heightMap->SetTexture (SOIL_load_OGL_texture (
-		TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO,
-		SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
 	if (!currentShader->LinkProgram ())
 	{
@@ -23,9 +24,24 @@ Renderer::Renderer (Window& parent) : OGLRenderer (parent)
 		return;
 	}
 
-	SetTextureRepeating (heightMap->GetTexture (), true);	light = new Light (Vector3 ((RAW_HEIGHT * HEIGHTMAP_X / 2.0f),
-					   500.0f, (RAW_HEIGHT * HEIGHTMAP_Z / 2.0f)),
-					   Vector4 (0.5, 0.5, 1, 1), (RAW_WIDTH * HEIGHTMAP_X) / 2.0f);
+	SetTextureRepeating (heightMap->GetTexture (), true);	if (lightVector.size () < Renderer::MAX_LIGHT_COUNT)	{		lightVector.push_back (new Light (
+			Vector3 ((RAW_HEIGHT * HEIGHTMAP_X / 2.0f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z / 2.0f)),
+			Vector4 (1, 0, 0, 1), 			(RAW_WIDTH * HEIGHTMAP_X) / 2.0f)		);	}
+
+	//if (lightVector.size () < Renderer::MAX_LIGHT_COUNT)	//{	//	lightVector.push_back (new Light (
+	//		Vector3 ((RAW_HEIGHT * HEIGHTMAP_X / 2.0f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z / 2.0f)),
+	//		Vector4 (0, 0, 1, 1), 	//		(RAW_WIDTH * HEIGHTMAP_X) / 2.0f)	//	);	//}
+
+	//if (lightVector.size () < Renderer::MAX_LIGHT_COUNT)	//{	//	lightVector.push_back (new Light (
+	//		Vector3 ((RAW_HEIGHT * HEIGHTMAP_X / 2.0f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z / 2.0f)),
+	//		Vector4 (0, 1, 0, 1), 	//		(RAW_WIDTH * HEIGHTMAP_X) / 2.0f)	//	);	//}
+
+	for (unsigned i = 0; i < lightVector.size (); i++)
+	{
+		lightColour[i] = lightVector[i]->GetColour ();
+		lightPos[i] = lightVector[i]->GetPosition ();
+		lightRadius[i] = lightVector[i]->GetRadius ();
+	}
 
 	projMatrix = Matrix4::Perspective (1.0f, 15000.0f,
 									   (float)width / (float)height, 45.0f);
@@ -36,7 +52,10 @@ Renderer::Renderer (Window& parent) : OGLRenderer (parent)
 {
 	delete camera;
 	delete heightMap;
-	delete light;
+	for (unsigned i = 0; i < lightVector.size (); i++)
+	{
+		delete (lightVector[i]);
+	}
 }
 
 void Renderer::UpdateScene (float msec)
@@ -54,9 +73,35 @@ void Renderer::UpdateScene (float msec)
 	glUniform3fv (glGetUniformLocation (currentShader->GetProgram (),
 				  "cameraPos"), 1, (float *)& camera->GetPosition ());
 
+	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "lightCount"), lightVector.size ());
+
 	UpdateShaderMatrices ();
 
-	SetShaderLight (*light);
+	for (int i = 0; i < lightVector.size (); i++)
+	{
+		ostringstream lcss;
+		lcss << "lightColour[" << i << "]";
+		string lcstr = lcss.str ();
+
+		glUniform4f (glGetUniformLocation (currentShader->GetProgram (), lcstr.c_str ()),
+					 lightColour[i].x,  lightColour[i].y,  lightColour[i].z,  lightColour[i].w);
+
+		ostringstream lpss;
+		lpss << "lightPos[" << i << "]";
+		string lpstr = lpss.str ();
+
+		glUniform3f (glGetUniformLocation (currentShader->GetProgram (), lpstr.c_str ()), 
+					 lightPos[i].x, lightPos[i].y, lightPos[i].z);
+
+		ostringstream lrss;
+		lrss << "lightRadius[" << i << "]";
+		string lrstr = lrss.str ();
+
+		glUniform1f (glGetUniformLocation (currentShader->GetProgram (), lrstr.c_str ()), 
+					 lightRadius[i]);
+	}
+
+	//SetShaderLight (*light);
 
 	heightMap->Draw ();
 
