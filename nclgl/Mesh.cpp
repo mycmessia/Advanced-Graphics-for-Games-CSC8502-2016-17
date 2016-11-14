@@ -22,6 +22,8 @@ Mesh::Mesh (void)
 	indices = nullptr;
 	numIndices = 0;
 
+	normals = nullptr;
+
 	srand (static_cast <unsigned> (time (0)));
 }
 
@@ -35,6 +37,7 @@ Mesh::~Mesh (void)
 	glDeleteTextures (1, &texture);
 	delete[] textureCoords;
 	delete[] indices;
+	delete[] normals;
 }
 
 Mesh* Mesh::GenerateQuad (unsigned tutorial)
@@ -95,6 +98,55 @@ Mesh* Mesh::GenerateTriangle (unsigned tutorial)
 	return m;
 }
 
+void Mesh::GenerateNormals ()
+{
+	if (!normals)
+	{
+		normals = new Vector3[numVertices];
+	}
+
+	for (GLuint i = 0; i < numVertices; ++i)
+	{
+		normals[i] = Vector3 ();
+	}
+
+	if (indices)
+	{ // Generate per - vertex normals
+		for (GLuint i = 0; i < numIndices; i += 3)
+		{
+			unsigned int a = indices[i];
+			unsigned int b = indices[i + 1];
+			unsigned int c = indices[i + 2];
+
+			Vector3 normal = Vector3::Cross (
+				(vertices[b] - vertices[a]), (vertices[c] - vertices[a]));
+
+			normals[a] += normal;
+			normals[b] += normal;
+			normals[c] += normal;
+		}
+	}
+	else
+	{ // It ’s just a list of triangles , so generate face normals
+		for (GLuint i = 0; i < numVertices; i += 3)
+		{
+			Vector3 & a = vertices[i];
+			Vector3 & b = vertices[i + 1];
+			Vector3 & c = vertices[i + 2];
+
+			Vector3 normal = Vector3::Cross (b - a, c - a);
+
+			normals[i] = normal;
+			normals[i + 1] = normal;
+			normals[i + 2] = normal;
+		}
+	}
+
+	for (GLuint i = 0; i < numVertices; ++i)
+	{
+		normals[i].Normalise ();	}
+}
+
 void Mesh::BufferData ()
 {
 	glBindVertexArray (arrayObject);
@@ -123,6 +175,16 @@ void Mesh::BufferData ()
 		glVertexAttribPointer (2, 2, GL_FLOAT, GL_FALSE, 0, 0);
 		glEnableVertexAttribArray (2);
 	}
+
+	if (normals)
+	{
+		glGenBuffers (1, &bufferObject[NORMAL_BUFFER]);
+		glBindBuffer (GL_ARRAY_BUFFER, bufferObject[NORMAL_BUFFER]);
+		glBufferData (GL_ARRAY_BUFFER, numVertices * sizeof (Vector3),
+					  normals, GL_STATIC_DRAW);
+		glVertexAttribPointer (3, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray (3);
+	}
 
 	if (indices)
 	{

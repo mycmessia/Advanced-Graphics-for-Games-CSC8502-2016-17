@@ -30,13 +30,12 @@ _-_-_-_-_-_-_-""  ""
 #include "Quaternion.h"
 #include "Matrix4.h"
 #include "Window.h"
-//#include "light.h"
+#include "Light.h"
 
 #include "Shader.h"		//Students make this file...
 #include "Mesh.h"		//And this one...
 
 using std::vector;
-
 
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "glew32.lib")
@@ -107,41 +106,40 @@ public:
 	OGLRenderer (Window &parent);
 	virtual ~OGLRenderer (void);
 
-	virtual void	RenderScene () = 0;
-	virtual void	UpdateScene (float msec);
-	void			SwapBuffers ();
+	virtual void RenderScene () = 0;
+	virtual void UpdateScene (float msec);
+	void SwapBuffers ();
+		 
+	bool HasInitialised () const;
+				 
+	static void	DrawDebugLine (DebugDrawMode mode, const Vector3 &from, const Vector3 &to, const Vector3 &fromColour = Vector3 (1, 1, 1), const Vector3 &toColour = Vector3 (1, 1, 1));
+	static void	DrawDebugBox (DebugDrawMode mode, const Vector3 &at, const Vector3 &scale, const Vector3 &colour = Vector3 (1, 1, 1));
+	static void	DrawDebugCross (DebugDrawMode mode, const Vector3 &at, const Vector3 &scale, const Vector3 &colour = Vector3 (1, 1, 1));
+	static void	DrawDebugCircle (DebugDrawMode mode, const Vector3 &at, const float radius, const Vector3 &colour = Vector3 (1, 1, 1));
 
-	bool			HasInitialised () const;
-
-	static void		DrawDebugLine (DebugDrawMode mode, const Vector3 &from, const Vector3 &to, const Vector3 &fromColour = Vector3 (1, 1, 1), const Vector3 &toColour = Vector3 (1, 1, 1));
-	static void		DrawDebugBox (DebugDrawMode mode, const Vector3 &at, const Vector3 &scale, const Vector3 &colour = Vector3 (1, 1, 1));
-	static void		DrawDebugCross (DebugDrawMode mode, const Vector3 &at, const Vector3 &scale, const Vector3 &colour = Vector3 (1, 1, 1));
-	static void		DrawDebugCircle (DebugDrawMode mode, const Vector3 &at, const float radius, const Vector3 &colour = Vector3 (1, 1, 1));
-
-	void			SetAsDebugDrawingRenderer ()
+	void SetAsDebugDrawingRenderer ()
 	{
 		debugDrawingRenderer = this;
 	}
 
-	Shader*			GetCurrentShader () const
+	Shader* GetCurrentShader () const
 	{
 		return currentShader;
 	}
 
 protected:
-	virtual void	Resize (int x, int y);
-	void			UpdateShaderMatrices ();
-	void			SetCurrentShader (Shader*s);
+	virtual void Resize (int x, int y);
+	void UpdateShaderMatrices ();
+	void SetCurrentShader (Shader*s);
 
-	void			SetTextureRepeating (GLuint target, bool state);
+	void SetTextureRepeating (GLuint target, bool state);
 
-	//void			SetShaderLight(const Light &l);
-
-	void			DrawDebugPerspective (Matrix4*matrix = 0);
-	void			DrawDebugOrtho (Matrix4*matrix = 0);
+	void DrawDebugPerspective (Matrix4*matrix = 0);
+	void DrawDebugOrtho (Matrix4*matrix = 0);
 
 	Shader* currentShader;
 
+	void SetShaderLight (const Light &l);
 
 	Matrix4 projMatrix;		//Projection matrix
 	Matrix4 modelMatrix;	//Model matrix. NOT MODELVIEW

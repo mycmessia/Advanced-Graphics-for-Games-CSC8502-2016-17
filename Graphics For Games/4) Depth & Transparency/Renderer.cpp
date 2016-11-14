@@ -57,8 +57,6 @@ void Renderer::RenderScene ()
 
 	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "diffuseTex"), 0);
 
-	//glActiveTexture (GL_TEXTURE0);
-
 	for (unsigned int i = 0; i < 2; ++i)
 	{
 		glUniformMatrix4fv (
@@ -66,11 +64,7 @@ void Renderer::RenderScene ()
 			(float *)& Matrix4::Translation (positions[i])
 		);
 
-		glBindTexture (GL_TEXTURE_2D, meshes[i]->GetTexture ());
-
 		meshes[i]->Draw ();
-
-		glBindTexture (GL_TEXTURE_2D, 0);
 	}
 
 	glUseProgram (0);

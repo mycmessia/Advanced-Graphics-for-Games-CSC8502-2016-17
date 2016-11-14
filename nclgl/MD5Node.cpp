@@ -27,7 +27,7 @@ large enough that we could risk skipping over frames - generally this only
 happens when we hit a debug breakpoint.
 
 */
-void	MD5Node::Update (float msec)
+void MD5Node::Update (float msec)
 {
 	if (currentAnim)
 	{
@@ -54,7 +54,7 @@ void	MD5Node::Update (float msec)
 /*
 Swaps the currently used animation of this MD5Mesh.
 */
-void	MD5Node::PlayAnim (std::string name)
+void MD5Node::PlayAnim (std::string name)
 {
 	/*
 	We want to reset all of the animation details

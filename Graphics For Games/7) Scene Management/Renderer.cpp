@@ -117,11 +117,7 @@ Renderer::Renderer (Window & parent) : OGLRenderer (parent)
 
 	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "diffuseTex"), 0);
 	
-	glBindTexture (GL_TEXTURE_2D, quad->GetTexture ());
-	
 	DrawNodes ();
-	
-	glBindTexture (GL_TEXTURE_2D, 0);
 
 	glUseProgram (0);
 	SwapBuffers ();

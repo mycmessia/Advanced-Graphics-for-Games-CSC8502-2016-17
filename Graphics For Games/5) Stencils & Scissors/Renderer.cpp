@@ -62,17 +62,14 @@ void Renderer::ToggleStencil ()
 		glStencilFunc (GL_ALWAYS, 1, 0xFF);
 		glStencilOp (GL_REPLACE, GL_REPLACE, GL_REPLACE);
 
-		glBindTexture (GL_TEXTURE_2D, quad->GetTexture ());
 		quad -> Draw ();
-		glBindTexture (GL_TEXTURE_2D, 0);
 
 		glColorMask (GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 		// stencil the black chessboard pieces GL_EQUAL
 		// stencil the white chessboard pieces GL_NOTEQUAL
 		glStencilFunc (GL_EQUAL, 1, 0xFF);
 		glStencilOp (GL_KEEP, GL_KEEP, GL_KEEP);
-	}	glBindTexture (GL_TEXTURE_2D, triangle->GetTexture ());	triangle -> Draw ();
-	glBindTexture (GL_TEXTURE_2D, 0);
+	}	triangle -> Draw ();
 
 	glUseProgram (0);
 	glDisable (GL_SCISSOR_TEST);
