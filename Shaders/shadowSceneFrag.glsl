@@ -49,5 +49,5 @@ void  main(void)
     vec3 colour = (diffuse.rgb * lightColour.rgb);
     colour += (lightColour.rgb * sFactor) * 0.33;
     gl_FragColor = vec4 (colour * atten * lambert , diffuse.a);
-    gl_FragColor.rgb += (diffuse.rgb * lightColour.rgb) * 0.5;
+    gl_FragColor.rgb += (diffuse.rgb * lightColour.rgb) * 0.2;
 }

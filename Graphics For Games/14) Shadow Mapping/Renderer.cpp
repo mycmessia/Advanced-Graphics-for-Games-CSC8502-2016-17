@@ -139,7 +139,7 @@ void Renderer::DrawCombinedScene ()
 
 void Renderer::DrawMesh ()
 {
-	modelMatrix.ToIdentity ();
+	modelMatrix = Matrix4::Translation (Vector3 (100, 0, 100));
 	Matrix4 tempMatrix = textureMatrix * modelMatrix;
 
 	glUniformMatrix4fv (glGetUniformLocation (currentShader->GetProgram (), "textureMatrix"), 1, false, *&tempMatrix.values);
