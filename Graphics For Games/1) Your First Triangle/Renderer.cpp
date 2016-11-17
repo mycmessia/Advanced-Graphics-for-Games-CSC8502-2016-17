@@ -1,12 +1,13 @@
 #include "Renderer.h"
 
-Renderer::Renderer(Window &parent) : OGLRenderer(parent) 
+Renderer::Renderer (Window &parent) : OGLRenderer (parent)
 {
 	triangle = Mesh::GenerateTriangle (1);
 
 	currentShader = new Shader (SHADERDIR"basicVertex.glsl", SHADERDIR"colourFragment.glsl");
 
-	if (!currentShader->LinkProgram()) {
+	if (!currentShader->LinkProgram ())
+	{
 		return;
 	}
 
@@ -15,17 +16,18 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	glClearColor (0.1f, 0.1f, 0.1f, 1.0f);
 }
 
-Renderer::~Renderer(void) 
+Renderer::~Renderer (void)
 {
 	delete triangle;
 }
 
-void Renderer::RenderScene() 
+void Renderer::RenderScene ()
 {
 	glClear (GL_COLOR_BUFFER_BIT);
 
-	glUseProgram (currentShader->GetProgram());
-
+	glUseProgram (currentShader->GetProgram ());
+	
+	// Further work
 	triangle->ChangeColor ();
 
 	triangle->Draw ();
