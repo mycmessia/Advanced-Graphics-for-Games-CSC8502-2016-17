@@ -1,6 +1,6 @@
 #pragma once
 #include <map>
-#include "./NCLGL/OGLRenderer.h"
+#include "../../nclgl/OGLRenderer.h"
 
 /*
 We can actually get away with simple integer math for the majority of
