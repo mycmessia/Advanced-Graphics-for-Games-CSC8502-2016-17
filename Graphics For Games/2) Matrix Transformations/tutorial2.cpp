@@ -1,17 +1,20 @@
 #pragma comment(lib, "nclgl.lib")
 
 #include "../../nclGL/window.h"
-#include "Renderer.h"
+#include "RendererT02.h"
 
-int main () {
+int main ()
+{
 	Window w ("Vertex Transformation!", 800, 600, false);
-	
-	if (!w.HasInitialised()) {
+
+	if (!w.HasInitialised ())
+	{
 		return -1;
 	}
 
-	Renderer renderer(w);
-	if (!renderer.HasInitialised()) {
+	Renderer renderer (w);
+	if (!renderer.HasInitialised ())
+	{
 		return -1;
 	}
 
@@ -22,7 +25,7 @@ int main () {
 
 	while (w.UpdateWindow () && !Window::GetKeyboard ()->KeyDown (KEYBOARD_ESCAPE))
 	{
-		if (Window::GetKeyboard ()->KeyDown (KEYBOARD_1)) 
+		if (Window::GetKeyboard ()->KeyDown (KEYBOARD_1))
 			renderer.SwitchToOrthographic ();
 
 		if (Window::GetKeyboard ()->KeyDown (KEYBOARD_2))
@@ -55,15 +58,15 @@ int main () {
 		if (Window::GetKeyboard ()->KeyDown (KEYBOARD_I))
 			position.y += 1.0f;
 
-		if (Window::GetKeyboard ()->KeyDown(KEYBOARD_J))
-			position.x-= 1.0f;
+		if (Window::GetKeyboard ()->KeyDown (KEYBOARD_J))
+			position.x -= 1.0f;
 		if (Window::GetKeyboard ()->KeyDown (KEYBOARD_L))
-			position.x+= 1.0f;
+			position.x += 1.0f;
 
 		if (Window::GetKeyboard ()->KeyDown (KEYBOARD_O))
-			position.z-= 1.0f;
+			position.z -= 1.0f;
 		if (Window::GetKeyboard ()->KeyDown (KEYBOARD_P))
-			position.z+= 1.0f;
+			position.z += 1.0f;
 
 		renderer.SetRotation (rotation);
 		renderer.SetScale (scale);

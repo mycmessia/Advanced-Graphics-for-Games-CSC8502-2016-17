@@ -1,4 +1,4 @@
-#include "Renderer.h"
+#include "RendererT12.h"
 
 Renderer::Renderer (Window& parent) : OGLRenderer (parent)
 {
@@ -6,13 +6,13 @@ Renderer::Renderer (Window& parent) : OGLRenderer (parent)
 		RAW_WIDTH * HEIGHTMAP_X / 2.0f, 500, RAW_HEIGHT * HEIGHTMAP_Z));
 
 	heightMap = new HeightMap (TEXTUREDIR"terrain.raw");
-	heightMap->SetTexture (
-		SOIL_load_OGL_texture (TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO,
-		SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS)
-	);
+	heightMap->SetTexture (SOIL_load_OGL_texture (TEXTUREDIR"Barren Reds.jpg",
+		SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	heightMap->SetBumpMap (SOIL_load_OGL_texture (TEXTUREDIR"Barren RedsDOT3.jpg", 
+		SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
-	currentShader = new Shader (SHADERDIR"PerPixelVertex.glsl",
-								SHADERDIR"PerPixelFragment.glsl");
+	currentShader = new Shader (SHADERDIR"BumpVertex.glsl",
+								SHADERDIR"BumpFragment.glsl");
 
 	if (!currentShader->LinkProgram ())
 	{
@@ -24,18 +24,23 @@ Renderer::Renderer (Window& parent) : OGLRenderer (parent)
 		return;
 	}
 
-	SetTextureRepeating (heightMap->GetTexture (), true);
+	if (!heightMap->GetBumpMap ())
+	{
+		return;
+	}
+
+	SetTextureRepeating (heightMap->GetTexture (), true);	SetTextureRepeating (heightMap->GetBumpMap (), true);
 	AddLight (
 		Vector3 ((RAW_HEIGHT * HEIGHTMAP_X / 2.0f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z / 2.0f)),
-		Vector4 (1, 0, 0, 1), 
+		Vector4 (1, 1, 1, 1), 
 		(RAW_WIDTH * HEIGHTMAP_X) / 2.0f
 	);
 
-	AddLight (
-		Vector3 ((RAW_HEIGHT * HEIGHTMAP_X / 2.0f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z / 2.0f)),
-		Vector4 (1, 0, 1, 1), 
-		(RAW_WIDTH * HEIGHTMAP_X) / 2.0f
-	);
+	//AddLight (
+	//	Vector3 ((RAW_HEIGHT * HEIGHTMAP_X / 2.0f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z / 2.0f)),
+	//	Vector4 (1, 0, 1, 1), 
+	//	(RAW_WIDTH * HEIGHTMAP_X) / 2.0f
+	//);
 
 	for (unsigned i = 0; i < lightVector.size (); i++)
 	{
@@ -52,10 +57,13 @@ Renderer::Renderer (Window& parent) : OGLRenderer (parent)
 }Renderer::~Renderer (void)
 {
 	delete camera;
+	camera = nullptr;
 	delete heightMap;
+	heightMap = nullptr;
 	for (unsigned i = 0; i < lightVector.size (); i++)
 	{
 		delete (lightVector[i]);
+		lightVector[i] = nullptr;
 	}
 }
 
@@ -68,8 +76,9 @@ void Renderer::UpdateScene (float msec)
 	glClear (GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
 	glUseProgram (currentShader->GetProgram ());
-	glUniform1i (glGetUniformLocation (currentShader->GetProgram (),
-				 "diffuseTex"), 0);
+	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "diffuseTex"), 0);
+	// Set the value to 2 because I use GL_TEXTURE2 to store the bumpTex in Mesh.cpp
+	glUniform1i (glGetUniformLocation (currentShader -> GetProgram (),"bumpTex"), 2);
 
 	glUniform3fv (glGetUniformLocation (currentShader->GetProgram (),
 				  "cameraPos"), 1, (float *)& camera->GetPosition ());

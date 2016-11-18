@@ -1,4 +1,4 @@
-#include "Renderer.h"
+#include "RendererT02.h"
 
 Renderer::Renderer (Window &parent) : OGLRenderer (parent) 
 {
