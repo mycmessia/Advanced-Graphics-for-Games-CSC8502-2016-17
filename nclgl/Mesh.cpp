@@ -233,7 +233,7 @@ void Mesh::BufferData ()
 	glGenBuffers (1, &bufferObject[VERTEX_BUFFER]);
 	glBindBuffer (GL_ARRAY_BUFFER, bufferObject[VERTEX_BUFFER]);
 	glBufferData (GL_ARRAY_BUFFER, numVertices * sizeof (Vector3), vertices, GL_STATIC_DRAW);
-	// first parameter is the layout location in vertex shader glsl #version >= 420 
+	// first parameter is the layout location in vertex shader glsl #version >= 330 
 	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray (0);
 

@@ -1,4 +1,4 @@
-#include "RendererT13.h"
+#include "CourseWorkRenderer.h"
 
 Renderer::Renderer (Window& parent) : OGLRenderer (parent)
 {

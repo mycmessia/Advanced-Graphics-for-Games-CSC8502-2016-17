@@ -15,8 +15,6 @@ If you run the program, you should see a line of text in the top left of the
 screen, drawn in orthographic mode, and a line of text in 'world space',
 at a position near the origin.
 
-
-
 The font for this tutorial was generated using a nice easy program
 obtained from:
 //http://www.lmnopc.com/bitmapfontbuilder/bitmap-font-builder-download/
