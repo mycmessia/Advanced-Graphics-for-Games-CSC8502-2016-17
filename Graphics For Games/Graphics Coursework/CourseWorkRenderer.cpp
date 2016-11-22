@@ -2,8 +2,7 @@
 
 Renderer::Renderer (Window &parent) : OGLRenderer (parent)
 {
-	//camera = new Camera (0.0f, 0.0f, Vector3 (RAW_WIDTH * HEIGHTMAP_X / 2.0f, 500, RAW_HEIGHT * HEIGHTMAP_Z));
-	camera = new Camera (0, 0, Vector3 (0, 0, 250.0f));
+	camera = new Camera (0.0f, 0.0f, Vector3 (RAW_WIDTH * HEIGHTMAP_X / 2.0f, 500, RAW_HEIGHT * HEIGHTMAP_Z));
 
 	// Generate mesh
 	skyboxMesh = Mesh::GenerateQuad (0);
@@ -186,9 +185,9 @@ void Renderer::DrawText (const std::string &text, const Vector3 &position, const
 	delete mesh;
 }
 
-void Renderer::CalcFPS (float sec)
+void Renderer::CalcFPS (float msec)
 {
-	FPS = 1.0f / sec;
+	FPS = 1000.0f / msec;
 }
 
 void Renderer::AddLight (Vector3 position, Vector4 colour, float radius)
@@ -264,6 +263,9 @@ void Renderer::RenderParticle ()
 	glUseProgram (currentShader->GetProgram ());
 
 	modelMatrix.ToIdentity ();
+	modelMatrix = modelMatrix.Translation (
+		Vector3 ((RAW_HEIGHT * HEIGHTMAP_X / 2.0f), 600.0f, (RAW_HEIGHT * HEIGHTMAP_Z / 2.0F))
+	);
 	viewMatrix = camera->BuildViewMatrix ();
 	projMatrix = Matrix4::Perspective (1.0f, 15000.0f, (float)width / (float)height, 45.0f);
 		

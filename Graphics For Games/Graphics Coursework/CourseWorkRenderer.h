@@ -18,7 +18,7 @@ public:
 	virtual void RenderScene ();
 	virtual void UpdateScene (float msec);
 
-	void CalcFPS (float sec);
+	void CalcFPS (float msec);
 
 protected:
 	Camera* camera;

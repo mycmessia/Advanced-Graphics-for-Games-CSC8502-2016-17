@@ -2,11 +2,9 @@
 #include <string>
 #include <io.h>
 #include <stdio.h>
+#include <random>
 
-
-//Cheap random number generator, will generate
-//numbers between 0.0 and 1.0 to 2 DP
-#define RAND() ((rand()%101)/100.0f)
+std::default_random_engine generator;
 
 /*
 Constructor, which sets everything to some 'sensible' defaults.
@@ -145,12 +143,19 @@ Particle* ParticleEmitter::GetFreeParticle ()
 
 	//Now we have to reset its values - if it was popped off the
 	//free list, it'll still have the values of its 'previous life'
+	std::uniform_real_distribution<float> dis1(0.f, 1.f);
+	std::uniform_real_distribution<float> dis2(-1.f, 1.f);
 
-	p->colour = Vector4 (RAND (), RAND (), RAND (), 1.0);
+	p->colour = Vector4 (
+		dis1(generator),
+		dis1(generator),
+		dis1(generator),
+		1.0);
+
 	p->direction = initialDirection;
-	p->direction.x += ((RAND () - RAND ()) * particleVariance);
-	p->direction.y += ((RAND () - RAND ()) * particleVariance);
-	p->direction.z += ((RAND () - RAND ()) * particleVariance);
+	p->direction.x += (dis2(generator) * particleVariance);
+	p->direction.y += (dis2(generator) * particleVariance);
+	p->direction.z += (dis2(generator) * particleVariance);
 
 	p->direction.Normalise ();	//Keep its direction normalised!
 	p->position.ToZero ();
@@ -240,5 +245,6 @@ void ParticleEmitter::Draw ()
 	glBindTexture (GL_TEXTURE_2D, 0);
 
 	glBindVertexArray (0); //Remember to turn off our VAO ;)
-	glDisable (GL_BLEND);
+	//glDisable (GL_BLEND);
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 };
