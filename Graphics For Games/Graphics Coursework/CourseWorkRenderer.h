@@ -32,7 +32,8 @@ protected:
 	void RenderText ();
 
 	// Render skybox (cubeMap)
-	GLuint cubeMap;
+	GLuint cubeMap;		// day
+	GLuint cubeMap2;	// night
 	Mesh* skyboxMesh;
 	Shader* skyboxShader;
 

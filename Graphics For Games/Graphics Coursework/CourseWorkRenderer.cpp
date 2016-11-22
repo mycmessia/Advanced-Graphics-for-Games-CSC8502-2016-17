@@ -21,16 +21,25 @@ Renderer::Renderer (Window &parent) : OGLRenderer (parent)
 
 	basicFont = new Font (SOIL_load_OGL_texture (TEXTUREDIR"tahoma.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_COMPRESS_TO_DXT), 16, 16);
 	cubeMap = SOIL_load_OGL_cubemap (
-		TEXTUREDIR"rusted_west.jpg", TEXTUREDIR"rusted_east.jpg",
-		TEXTUREDIR"rusted_up.jpg", TEXTUREDIR"rusted_down.jpg",
-		TEXTUREDIR"rusted_south.jpg", TEXTUREDIR"rusted_north.jpg",
+		TEXTUREDIR"skybox/stormydays_lf.tga", TEXTUREDIR"skybox/stormydays_rt.tga",
+		TEXTUREDIR"skybox/stormydays_up.tga", TEXTUREDIR"skybox/stormydays_dn.tga",
+		TEXTUREDIR"skybox/stormydays_ft.tga", TEXTUREDIR"skybox/stormydays_bk.tga",
 		SOIL_LOAD_RGB,
 		SOIL_CREATE_NEW_ID, 0
 	);
+
+	cubeMap2 = SOIL_load_OGL_cubemap (
+		TEXTUREDIR"skybox/nightsky_lf.tga", TEXTUREDIR"skybox/nightsky_rt.tga",
+		TEXTUREDIR"skybox/nightsky_up.tga", TEXTUREDIR"skybox/nightsky_dn.tga",
+		TEXTUREDIR"skybox/nightsky_ft.tga", TEXTUREDIR"skybox/nightsky_bk.tga",
+		SOIL_LOAD_RGB,
+		SOIL_CREATE_NEW_ID, 0
+	);
+
 	heightMap->SetTexture (SOIL_load_OGL_texture (TEXTUREDIR"Barren Reds.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	heightMap->SetBumpMap (SOIL_load_OGL_texture (TEXTUREDIR"Barren RedsDOT3.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
-	if (!cubeMap || !heightMap->GetTexture () || !heightMap->GetBumpMap ())
+	if (!cubeMap || !cubeMap2 || !heightMap->GetTexture () || !heightMap->GetBumpMap ())
 	{
 		return;
 	}
@@ -93,11 +102,11 @@ void Renderer::RenderScene ()
 
 	RenderSkybox ();
 
-	RenderHeightMap ();
+	//RenderHeightMap ();
 
-	RenderText ();
+	//RenderText ();
 
-	RenderParticle ();
+	//RenderParticle ();
 
 	SwapBuffers ();
 }
@@ -118,6 +127,15 @@ void Renderer::RenderSkybox ()
 	projMatrix = Matrix4::Perspective (1.0f, 15000.0f, (float)width / (float)height, 45.0f);
 
 	UpdateShaderMatrices ();
+
+	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "cubeTex"), 0);
+	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "cubeTex2"), 1);
+
+	glActiveTexture (GL_TEXTURE0);
+	glBindTexture (GL_TEXTURE_2D, cubeMap);
+
+	glActiveTexture (GL_TEXTURE1);
+	glBindTexture (GL_TEXTURE_2D, cubeMap2);
 
 	skyboxMesh->Draw ();
 

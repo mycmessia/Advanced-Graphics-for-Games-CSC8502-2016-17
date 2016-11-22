@@ -159,7 +159,9 @@ void Mesh::GenerateNormals ()
 
 	for (GLuint i = 0; i < numVertices; ++i)
 	{
-		normals[i].Normalise ();	}
+		normals[i].Normalise ();
+
+	}
 }
 
 void Mesh::GenerateTangents ()
@@ -181,9 +183,7 @@ void Mesh::GenerateTangents ()
 			int b = indices[i + 1];
 			int c = indices[i + 2];
 
-			Vector3 tangent = GenerateTangent (vertices[a], vertices[b],
-											   vertices[c], textureCoords[a],
-											   textureCoords[b], textureCoords[c]);
+			Vector3 tangent = GenerateTangent (vertices[a], vertices[b], vertices[c], textureCoords[a], textureCoords[b], textureCoords[c]);
 
 			tangents[a] += tangent;
 			tangents[b] += tangent;
@@ -194,9 +194,7 @@ void Mesh::GenerateTangents ()
 	{
 		for (GLuint i = 0; i < numVertices; i += 3)
 		{
-			Vector3 tangent = GenerateTangent (vertices[i], vertices[i + 1],
-											   vertices[i + 2], textureCoords[i],
-											   textureCoords[i + 1], textureCoords[i + 2]);
+			Vector3 tangent = GenerateTangent (vertices[i], vertices[i + 1], vertices[i + 2], textureCoords[i], textureCoords[i + 1], textureCoords[i + 2]);
 
 			tangents[i] += tangent;
 			tangents[i + 1] += tangent;
@@ -209,9 +207,7 @@ void Mesh::GenerateTangents ()
 	}
 }
 
-Vector3 Mesh::GenerateTangent (const Vector3 &a, const Vector3 &b,
-							   const Vector3 &c, const Vector2 & ta,
-							   const Vector2 & tb, const Vector2 & tc)
+Vector3 Mesh::GenerateTangent (const Vector3 &a, const Vector3 &b, const Vector3 &c, const Vector2 & ta, const Vector2 & tb, const Vector2 & tc)
 {
 	Vector2 coord1 = tb - ta;
 	Vector2 coord2 = tc - ta;
@@ -263,7 +259,11 @@ void Mesh::BufferData ()
 					  normals, GL_STATIC_DRAW);
 		glVertexAttribPointer (3, 3, GL_FLOAT, GL_FALSE, 0, 0);
 		glEnableVertexAttribArray (3);
-	}	if (tangents)
+	}
+
+	
+	
+	if (tangents)
 	{
 		glGenBuffers (1, &bufferObject[TANGENT_BUFFER]);
 		glBindBuffer (GL_ARRAY_BUFFER, bufferObject[TANGENT_BUFFER]);
@@ -299,7 +299,6 @@ void Mesh::ChangeColor ()
 	memcpy (change, changed_colours, numVertices * sizeof (Vector4));
 
 	delete[] changed_colours;
-
 	glUnmapBuffer (GL_ARRAY_BUFFER);
 }
 
@@ -307,23 +306,23 @@ void Mesh::Draw ()
 {
 	glBindVertexArray (arrayObject);
 
-	if (texture)
-	{
-		glActiveTexture (GL_TEXTURE0);
-		glBindTexture (GL_TEXTURE_2D, texture);
-	}
+	//if (texture)
+	//{
+	//	glActiveTexture (GL_TEXTURE0);
+	//	glBindTexture (GL_TEXTURE_2D, texture);
+	//}
 
-	if (texture2)
-	{
-		glActiveTexture (GL_TEXTURE1);
-		glBindTexture (GL_TEXTURE_2D, texture2);
-	}
+	//if (texture2)
+	//{
+	//	glActiveTexture (GL_TEXTURE1);
+	//	glBindTexture (GL_TEXTURE_2D, texture2);
+	//}
 
-	if (bumpTexture)
-	{
-		glActiveTexture (GL_TEXTURE2);
-		glBindTexture (GL_TEXTURE_2D, bumpTexture);
-	}
+	//if (bumpTexture)
+	//{
+	//	glActiveTexture (GL_TEXTURE2);
+	//	glBindTexture (GL_TEXTURE_2D, bumpTexture);
+	//}
 
 	if (bufferObject[INDEX_BUFFER])
 	{
