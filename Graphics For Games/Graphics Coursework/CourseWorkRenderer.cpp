@@ -1,53 +1,23 @@
 #include "CourseWorkRenderer.h"
 
-Renderer::Renderer (Window& parent) : OGLRenderer (parent)
+Renderer::Renderer (Window &parent) : OGLRenderer (parent)
 {
 	camera = new Camera (0.0f, 0.0f, Vector3 (RAW_WIDTH * HEIGHTMAP_X / 2.0f, 500, RAW_HEIGHT * HEIGHTMAP_Z));
 
+	// Generate mesh
+	skyboxMesh = Mesh::GenerateQuad (0);
 	heightMap = new HeightMap (TEXTUREDIR"terrain.raw");
-	heightMap->SetTexture (SOIL_load_OGL_texture (TEXTUREDIR"Barren Reds.jpg",
-						   SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
-	heightMap->SetBumpMap (SOIL_load_OGL_texture (TEXTUREDIR"Barren RedsDOT3.jpg",
-						   SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
-	if (!heightMap->GetTexture ())
-	{
-		return;
-	}
-
-	if (!heightMap->GetBumpMap ())
-	{
-		return;
-	}
-
-	quad = Mesh::GenerateQuad (13);
-	quad->SetTexture (SOIL_load_OGL_texture (TEXTUREDIR"water.jpg",
-					  SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
-
-	if (!quad->GetTexture ())
-	{
-		return;
-	}
-
-	reflectShader = new Shader (SHADERDIR"perPixelVertex.glsl", SHADERDIR"reflectFragment.glsl");
+	textShader = new Shader (SHADERDIR"TexturedVertex.glsl", SHADERDIR"TexturedFragment.glsl");
 	skyboxShader = new Shader (SHADERDIR"skyboxVertex.glsl", SHADERDIR"skyboxFragment.glsl");
-	lightShader = new Shader (SHADERDIR"BumpVertex.glsl", SHADERDIR"BumpFragment.glsl");
+	lightShader = new Shader (SHADERDIR"BumpVertex.glsl", SHADERDIR"BumpFragment.glsl");	// Draw heightMap
 
-	if (!reflectShader->LinkProgram ())
+	if (!textShader->LinkProgram () || !skyboxShader->LinkProgram () || !lightShader->LinkProgram ())
 	{
 		return;
 	}
 
-	if (!skyboxShader->LinkProgram ())
-	{
-		return;
-	}
-
-	if (!lightShader->LinkProgram ())
-	{
-		return;
-	}
-
+	basicFont = new Font (SOIL_load_OGL_texture (TEXTUREDIR"tahoma.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_COMPRESS_TO_DXT), 16, 16);
 	cubeMap = SOIL_load_OGL_cubemap (
 		TEXTUREDIR"rusted_west.jpg", TEXTUREDIR"rusted_east.jpg",
 		TEXTUREDIR"rusted_up.jpg", TEXTUREDIR"rusted_down.jpg",
@@ -55,25 +25,42 @@ Renderer::Renderer (Window& parent) : OGLRenderer (parent)
 		SOIL_LOAD_RGB,
 		SOIL_CREATE_NEW_ID, 0
 	);
+	heightMap->SetTexture (SOIL_load_OGL_texture (TEXTUREDIR"Barren Reds.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	heightMap->SetBumpMap (SOIL_load_OGL_texture (TEXTUREDIR"Barren RedsDOT3.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
-	if (!cubeMap)
+	if (!cubeMap || !heightMap->GetTexture () || !heightMap->GetBumpMap ())
 	{
-		return;	}	SetTextureRepeating (quad->GetTexture (), true);	SetTextureRepeating (heightMap->GetTexture (), true);	SetTextureRepeating (heightMap->GetBumpMap (), true);	AddLight (		Vector3 ((RAW_HEIGHT * HEIGHTMAP_X / 2.0f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z / 2.0f)), 		Vector4 (1, 1, 1, 1), 		(RAW_WIDTH * HEIGHTMAP_X) / 2.0f	);	for (unsigned i = 0; i < lightVector.size (); i++)	{		lightColour[i] = lightVector[i]->GetColour ();		lightPos[i] = lightVector[i]->GetPosition ();		lightRadius[i] = lightVector[i]->GetRadius ();	}	projMatrix = Matrix4::Perspective (1.0f, 15000.0f, (float)width / (float)height, 45.0f);	init = true;	waterRotate = 0.0f;	glEnable (GL_DEPTH_TEST);	glEnable (GL_BLEND);	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	glEnable (GL_TEXTURE_CUBE_MAP_SEAMLESS);}Renderer::~Renderer (void)
+		return;
+	}
+
+	SetTextureRepeating (heightMap->GetTexture (), true);
+	SetTextureRepeating (heightMap->GetBumpMap (), true);
+
+	AddLight (
+		Vector3 ((RAW_HEIGHT * HEIGHTMAP_X / 2.0f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z / 2.0F)),
+		Vector4 (1, 1, 1, 1),
+		(RAW_WIDTH * HEIGHTMAP_X) / 2.0F
+	);
+
+	for (unsigned i = 0; i < lightVector.size (); i++)
+	{
+		lightColour[i] = lightVector[i]->GetColour ();
+		lightPos[i] = lightVector[i]->GetPosition ();
+		lightRadius[i] = lightVector[i]->GetRadius ();
+	}
+
+	init = true;
+}
+
+Renderer::~Renderer (void)
 {
 	delete camera;
-	camera = nullptr;
 
-	delete heightMap;
-	heightMap = nullptr;
+	delete basicFont;
+	delete textShader;
 
-	delete quad;
-	quad = nullptr;
-
-	delete reflectShader;
-	reflectShader = nullptr;
-
+	delete skyboxMesh;
 	delete skyboxShader;
-	skyboxShader = nullptr;
 
 	delete lightShader;
 	lightShader = nullptr;
@@ -90,55 +77,103 @@ Renderer::Renderer (Window& parent) : OGLRenderer (parent)
 void Renderer::UpdateScene (float msec)
 {
 	camera->UpdateCamera (msec);
-	viewMatrix = camera->BuildViewMatrix ();
-	waterRotate += msec / 1000.0f;
 }
-void Renderer::DrawSkybox (){	glDepthMask (GL_FALSE);	SetCurrentShader (skyboxShader);	UpdateShaderMatrices ();	quad->Draw ();	glUseProgram (0);
-	glDepthMask (GL_TRUE);
-}
-void Renderer::DrawHeightMap ()
-{	SetCurrentShader (lightShader);
-	SetMultiLights ();
-	glUniform3fv (glGetUniformLocation (currentShader->GetProgram (),
-				  "cameraPos"), 1, (float *)& camera->GetPosition ());
-	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "diffuseTex"), 0);
-	// Set the value to 2 because I use GL_TEXTURE2 to store the bumpTex in Mesh.cpp
-	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "bumpTex"), 2);
-	modelMatrix.ToIdentity ();	textureMatrix.ToIdentity ();	UpdateShaderMatrices ();
-	heightMap->Draw ();
-	glUseProgram (0);
-}
-void Renderer::DrawWater ()
-{	SetCurrentShader (reflectShader);
-	SetMultiLights ();
-	glUniform3fv (glGetUniformLocation (currentShader->GetProgram (), "cameraPos"), 1, (float *)& camera->GetPosition ());
-	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "diffuseTex"), 0);
-	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "cubeTex"), 3);
-	glActiveTexture (GL_TEXTURE3);	glBindTexture (GL_TEXTURE_CUBE_MAP, cubeMap);	float heightX = (RAW_WIDTH * HEIGHTMAP_X / 2.0f);
 
-	float heightY = 256 * HEIGHTMAP_Y / 3.0f;
-
-	float heightZ = (RAW_HEIGHT * HEIGHTMAP_Z / 2.0f);
-
-	modelMatrix =
-		Matrix4::Translation (Vector3 (heightX, heightY, heightZ)) *
-		Matrix4::Scale (Vector3 (heightX, 1, heightZ)) *
-		Matrix4::Rotation (90, Vector3 (1.0f, 0.0f, 0.0f));
-
-	textureMatrix = Matrix4::Scale (Vector3 (10.0f, 10.0f, 10.0f)) * Matrix4::Rotation (waterRotate, Vector3 (0.0f, 0.0f, 1.0f));	UpdateShaderMatrices ();
-	quad->Draw ();
-	glUseProgram (0);
-}
-void Renderer::RenderScene ()
+void Renderer::RenderScene (float msec)
 {
-	glClear (GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	DrawSkybox ();
-	DrawHeightMap ();
-	DrawWater ();
+	RenderSkybox ();
+
+	RenderHeightMap ();
+
+	RenderText (msec);
 
 	SwapBuffers ();
-}
+}
+
+void Renderer::RenderSkybox ()
+{
+	glEnable (GL_BLEND);
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable (GL_TEXTURE_CUBE_MAP_SEAMLESS);
+	glDepthMask (GL_FALSE);
+
+	SetCurrentShader (skyboxShader);
+
+	glUseProgram (currentShader->GetProgram ());
+
+	modelMatrix.ToIdentity ();
+	viewMatrix = camera->BuildViewMatrix ();
+	projMatrix = Matrix4::Perspective (1.0f, 15000.0f, (float)width / (float)height, 45.0f);
+
+	UpdateShaderMatrices ();
+
+	skyboxMesh->Draw ();
+
+	modelMatrix.ToIdentity ();
+	viewMatrix.ToIdentity ();
+	projMatrix.ToIdentity ();
+
+	glUseProgram (0);
+
+	glDepthMask (GL_TRUE);
+	glDisable (GL_BLEND);
+	glDisable (GL_TEXTURE_CUBE_MAP_SEAMLESS);
+}
+
+void Renderer::RenderText (float msec)
+{
+	glEnable (GL_BLEND);
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE);
+
+	SetCurrentShader (textShader);
+
+	glUseProgram (currentShader->GetProgram ());
+
+	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "diffuseTex"), 0);
+
+	stringstream ss;
+	int fps = int (1.0f / msec);
+	ss << fps;
+	string s = ss.str();
+
+	//Render function to encapsulate our font rendering!
+	DrawText ("MeiYuchen's Course Work", lightVector[0]->GetPosition (), 64.0f, true);
+	DrawText ("FPS:" + s, Vector3 (0, 0, 0), 32.0f);
+
+	glUseProgram (0);
+
+	glDisable (GL_BLEND);
+}
+
+void Renderer::DrawText (const std::string &text, const Vector3 &position, const float size, const bool perspective)
+{
+	TextMesh* mesh = new TextMesh (text, *basicFont);
+
+	if (perspective)
+	{
+		modelMatrix = Matrix4::Translation (position) * Matrix4::Scale (Vector3 (size, size, 1));
+		viewMatrix = camera->BuildViewMatrix ();
+		projMatrix = Matrix4::Perspective (1.0f, 15000.0f, (float)width / (float)height, 45.0f);
+	}
+	else
+	{
+		modelMatrix = Matrix4::Translation (Vector3 (position.x, height - position.y, position.z)) * Matrix4::Scale (Vector3 (size, size, 1));
+		viewMatrix.ToIdentity ();
+		projMatrix = Matrix4::Orthographic (-1.0f, 1.0f, (float)width, 0.0f, (float)height, 0.0f);
+	}
+
+	UpdateShaderMatrices ();
+	mesh->Draw ();
+
+	modelMatrix.ToIdentity ();
+	viewMatrix.ToIdentity ();
+	projMatrix.ToIdentity ();
+
+	delete mesh;
+}
+
 void Renderer::AddLight (Vector3 position, Vector4 colour, float radius)
 {
 	if (lightVector.size () < Renderer::MAX_LIGHT_COUNT)	{		lightVector.push_back (new Light (position, colour, radius));	}
@@ -167,4 +202,4 @@ void Renderer::AddLight (Vector3 position, Vector4 colour, float radius)
 
 		glUniform1f (glGetUniformLocation (currentShader->GetProgram (), lrstr.c_str ()),
 					 lightRadius[i]);
-	}}
+	}}void Renderer::RenderHeightMap (){	glEnable (GL_DEPTH_TEST);	SetCurrentShader (lightShader);	glUseProgram (currentShader->GetProgram ());	SetMultiLights ();	glUniform3fv (glGetUniformLocation (currentShader->GetProgram (), "cameraPos"), 1, (float *)& camera->GetPosition ());	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "diffuseTex"), 0);	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "bumpTex"), 2);	modelMatrix.ToIdentity ();	viewMatrix = camera->BuildViewMatrix ();	projMatrix = Matrix4::Perspective (1.0f, 15000.0f, (float)width / (float)height, 45.0f);	UpdateShaderMatrices ();	heightMap->Draw ();	modelMatrix.ToIdentity ();	viewMatrix.ToIdentity ();	projMatrix.ToIdentity ();	glUseProgram (0);	glDisable (GL_DEPTH_TEST);}
