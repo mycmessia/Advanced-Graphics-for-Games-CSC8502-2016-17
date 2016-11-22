@@ -2,7 +2,8 @@
 
 Renderer::Renderer (Window &parent) : OGLRenderer (parent)
 {
-	camera = new Camera (0.0f, 0.0f, Vector3 (RAW_WIDTH * HEIGHTMAP_X / 2.0f, 500, RAW_HEIGHT * HEIGHTMAP_Z));
+	//camera = new Camera (0.0f, 0.0f, Vector3 (RAW_WIDTH * HEIGHTMAP_X / 2.0f, 500, RAW_HEIGHT * HEIGHTMAP_Z));
+	camera = new Camera (0, 0, Vector3 (0, 0, 250.0f));
 
 	// Generate mesh
 	skyboxMesh = Mesh::GenerateQuad (0);
@@ -10,9 +11,11 @@ Renderer::Renderer (Window &parent) : OGLRenderer (parent)
 
 	textShader = new Shader (SHADERDIR"TexturedVertex.glsl", SHADERDIR"TexturedFragment.glsl");
 	skyboxShader = new Shader (SHADERDIR"skyboxVertex.glsl", SHADERDIR"skyboxFragment.glsl");
-	lightShader = new Shader (SHADERDIR"BumpVertex.glsl", SHADERDIR"BumpFragment.glsl");	// Draw heightMap
+	lightShader = new Shader (SHADERDIR"BumpVertex.glsl", SHADERDIR"BumpFragment.glsl");
+	particleShader = new Shader ("particleVertex.glsl", "particleFragment.glsl", "particleGeometry.glsl");
 
-	if (!textShader->LinkProgram () || !skyboxShader->LinkProgram () || !lightShader->LinkProgram ())
+	if (!textShader->LinkProgram ()	|| !skyboxShader->LinkProgram () || 
+		!lightShader->LinkProgram () || !particleShader->LinkProgram ())
 	{
 		return;
 	}
@@ -49,6 +52,8 @@ Renderer::Renderer (Window &parent) : OGLRenderer (parent)
 		lightRadius[i] = lightVector[i]->GetRadius ();
 	}
 
+	emitter = new ParticleEmitter ();
+
 	init = true;
 }
 
@@ -71,15 +76,19 @@ Renderer::~Renderer (void)
 		lightVector[i] = nullptr;
 	}
 
+	delete particleShader;
+	delete emitter;
+
 	currentShader = 0;
 }
 
 void Renderer::UpdateScene (float msec)
 {
+	emitter->Update (msec);
 	camera->UpdateCamera (msec);
 }
 
-void Renderer::RenderScene (float msec)
+void Renderer::RenderScene ()
 {
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -87,7 +96,9 @@ void Renderer::RenderScene (float msec)
 
 	RenderHeightMap ();
 
-	RenderText (msec);
+	RenderText ();
+
+	RenderParticle ();
 
 	SwapBuffers ();
 }
@@ -122,7 +133,7 @@ void Renderer::RenderSkybox ()
 	glDisable (GL_TEXTURE_CUBE_MAP_SEAMLESS);
 }
 
-void Renderer::RenderText (float msec)
+void Renderer::RenderText ()
 {
 	glEnable (GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE);
@@ -134,7 +145,7 @@ void Renderer::RenderText (float msec)
 	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "diffuseTex"), 0);
 
 	stringstream ss;
-	int fps = int (1.0f / msec);
+	int fps = int (FPS);
 	ss << fps;
 	string s = ss.str();
 
@@ -165,6 +176,7 @@ void Renderer::DrawText (const std::string &text, const Vector3 &position, const
 	}
 
 	UpdateShaderMatrices ();
+
 	mesh->Draw ();
 
 	modelMatrix.ToIdentity ();
@@ -174,13 +186,24 @@ void Renderer::DrawText (const std::string &text, const Vector3 &position, const
 	delete mesh;
 }
 
+void Renderer::CalcFPS (float sec)
+{
+	FPS = 1.0f / sec;
+}
+
 void Renderer::AddLight (Vector3 position, Vector4 colour, float radius)
 {
-	if (lightVector.size () < Renderer::MAX_LIGHT_COUNT)	{		lightVector.push_back (new Light (position, colour, radius));	}
+	if (lightVector.size () < Renderer::MAX_LIGHT_COUNT)
+	{
+		lightVector.push_back (new Light (position, colour, radius));
+	}
 }
-void Renderer::SetMultiLights ()
-{	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "lightCount"), lightVector.size ());
-	for (int i = 0; i < lightVector.size (); i++)
+
+void Renderer::SetMultiLights ()
+{
+	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "lightCount"), lightVector.size ());
+
+	for (int i = 0; i < lightVector.size (); i++)
 	{
 		ostringstream lcss;
 		lcss << "lightColour[" << i << "]";
@@ -199,7 +222,72 @@ void Renderer::AddLight (Vector3 position, Vector4 colour, float radius)
 		ostringstream lrss;
 		lrss << "lightRadius[" << i << "]";
 		string lrstr = lrss.str ();
+		glUniform1f (glGetUniformLocation (currentShader->GetProgram (), lrstr.c_str ()), lightRadius[i]);
+	}
+}
 
-		glUniform1f (glGetUniformLocation (currentShader->GetProgram (), lrstr.c_str ()),
-					 lightRadius[i]);
-	}}void Renderer::RenderHeightMap (){	glEnable (GL_DEPTH_TEST);	SetCurrentShader (lightShader);	glUseProgram (currentShader->GetProgram ());	SetMultiLights ();	glUniform3fv (glGetUniformLocation (currentShader->GetProgram (), "cameraPos"), 1, (float *)& camera->GetPosition ());	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "diffuseTex"), 0);	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "bumpTex"), 2);	modelMatrix.ToIdentity ();	viewMatrix = camera->BuildViewMatrix ();	projMatrix = Matrix4::Perspective (1.0f, 15000.0f, (float)width / (float)height, 45.0f);	UpdateShaderMatrices ();	heightMap->Draw ();	modelMatrix.ToIdentity ();	viewMatrix.ToIdentity ();	projMatrix.ToIdentity ();	glUseProgram (0);	glDisable (GL_DEPTH_TEST);}
+void Renderer::RenderHeightMap ()
+{
+	glEnable (GL_DEPTH_TEST);
+
+	SetCurrentShader (lightShader);
+
+	glUseProgram (currentShader->GetProgram ());
+
+	SetMultiLights ();
+
+	glUniform3fv (glGetUniformLocation (currentShader->GetProgram (), "cameraPos"), 1, (float *)& camera->GetPosition ());
+	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "diffuseTex"), 0);
+	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "bumpTex"), 2);
+
+	modelMatrix.ToIdentity ();
+	viewMatrix = camera->BuildViewMatrix ();
+	projMatrix = Matrix4::Perspective (1.0f, 15000.0f, (float)width / (float)height, 45.0f);
+
+	UpdateShaderMatrices ();
+
+	heightMap->Draw ();
+
+	modelMatrix.ToIdentity ();
+	viewMatrix.ToIdentity ();
+	projMatrix.ToIdentity ();
+
+	glUseProgram (0);
+
+	glDisable (GL_DEPTH_TEST);
+}
+
+void Renderer::RenderParticle ()
+{
+	SetCurrentShader (particleShader);
+
+	glUseProgram (currentShader->GetProgram ());
+
+	modelMatrix.ToIdentity ();
+	viewMatrix = camera->BuildViewMatrix ();
+	projMatrix = Matrix4::Perspective (1.0f, 15000.0f, (float)width / (float)height, 45.0f);
+		
+	UpdateShaderMatrices ();
+
+	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "diffuseTex"), 0);
+
+	SetShaderParticleSize (emitter->GetParticleSize ());
+	emitter->SetParticleSize (8.0f);
+	emitter->SetParticleVariance (1.0f);
+	emitter->SetLaunchParticles (16.0f);
+	emitter->SetParticleLifetime (2000.0f);
+	emitter->SetParticleSpeed (0.1f);
+
+	emitter->Draw ();
+
+	modelMatrix.ToIdentity ();
+	viewMatrix.ToIdentity ();
+	projMatrix.ToIdentity ();
+
+	glUseProgram (0);
+}
+
+void Renderer::SetShaderParticleSize (float f)
+{
+	glUniform1f (glGetUniformLocation (currentShader->GetProgram (), "particleSize"), f);
+}

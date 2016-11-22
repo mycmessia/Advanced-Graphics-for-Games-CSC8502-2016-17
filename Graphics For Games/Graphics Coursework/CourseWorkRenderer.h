@@ -5,6 +5,7 @@
 #include "../../nclgl/HeightMap.h"
 #include "../../nclgl/Light.h"
 #include "TextMesh.h"
+#include "ParticleEmitter.h"
 
 #include <sstream>
 
@@ -14,31 +15,33 @@ public:
 	Renderer (Window &parent);
 	virtual ~Renderer (void);
 
-	virtual void RenderScene (float msec);
+	virtual void RenderScene ();
 	virtual void UpdateScene (float msec);
 
-protected:
-	void DrawText (const std::string &text, const Vector3 &position, const float size = 10.0f, const bool perspective = false);
-	void RenderText (float msec);
-	void RenderSkybox ();
-	void RenderHeightMap ();
+	void CalcFPS (float sec);
 
+protected:
 	Camera* camera;
 
 	// Render text
+	float FPS;
 	Font* basicFont;
 	Shader* textShader;
+	
+	void DrawText (const std::string &text, const Vector3 &position, const float size = 10.0f, const bool perspective = false);
+	void RenderText ();
 
 	// Render skybox (cubeMap)
 	GLuint cubeMap;
 	Mesh* skyboxMesh;
 	Shader* skyboxShader;
 
-	// Render HeightMap
+	void RenderSkybox ();
+
+	// Render HeightMap Multi lights
 	Mesh* heightMap;
 	Shader* heightMapShader;
 
-	// multi lights
 	static const int MAX_LIGHT_COUNT = 10;
 	Shader* lightShader;
 	vector<Light*> lightVector;
@@ -49,4 +52,13 @@ protected:
 
 	void AddLight (Vector3 pos, Vector4 colour, float radius);
 	void SetMultiLights ();
+
+	void RenderHeightMap ();
+
+	// Particle
+	ParticleEmitter* emitter;
+	Shader* particleShader;
+
+	void SetShaderParticleSize (float f);
+	void RenderParticle ();
 };

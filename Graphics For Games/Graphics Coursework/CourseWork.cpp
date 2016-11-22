@@ -23,7 +23,8 @@ int main ()
 	while (w.UpdateWindow () && !Window::GetKeyboard ()->KeyDown (KEYBOARD_ESCAPE))
 	{
 		renderer.UpdateScene (w.GetTimer ()->GetTimedMS ());
-		renderer.RenderScene (w.GetTimer ()->GetTimedMS ());
+		renderer.CalcFPS (w.GetTimer ()->GetTimedMS ());
+		renderer.RenderScene ();
 	}
 
 	return 0;
