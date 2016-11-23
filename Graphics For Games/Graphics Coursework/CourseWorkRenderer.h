@@ -4,11 +4,15 @@
 #include "../../nclgl/Camera.h"
 #include "../../nclgl/HeightMap.h"
 #include "../../nclgl/Light.h"
+#include "../../nclgl/MD5Mesh.h"
+#include "../../nclgl/MD5Node.h"
 #include "TextMesh.h"
 #include "ParticleEmitter.h"
 #include "VolcanoParticleEmitter.h"
 
 #include <sstream>
+
+#define SHADOWSIZE 2048
 
 class Renderer : public OGLRenderer
 {
@@ -72,4 +76,24 @@ protected:
 	float waterRotate;
 
 	void RenderWater ();
+
+	// Shadow hellknight
+	Shader* sceneShader;
+	Shader* shadowShader;
+
+	GLuint shadowTex;
+	GLuint shadowFBO;
+
+	MD5FileData* hellData;
+	MD5Node* hellNode;
+	GLuint hellTexture;
+	GLuint hellBumpMap;
+
+	Mesh* floor;
+
+	void DrawMesh ();
+	void DrawFloor ();
+	void DrawShadowScene ();
+	void DrawCombinedScene ();
+	void RenderHellShadow ();
 };

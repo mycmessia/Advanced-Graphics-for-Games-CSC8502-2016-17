@@ -30,6 +30,9 @@ protected:
 
 	MD5FileData* hellData;
 	MD5Node* hellNode;
+	GLuint hellTexture;
+	GLuint hellBumpMap;
+
 	Mesh* floor;
 	Camera* camera;
 	Light* light;

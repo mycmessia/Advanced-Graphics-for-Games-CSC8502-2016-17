@@ -11,6 +11,11 @@ Renderer::Renderer (Window &parent) : OGLRenderer (parent)
 	hellData->AddAnim (MESHDIR"idle2.md5anim");
 	hellNode->PlayAnim (MESHDIR"idle2.md5anim");
 
+	hellTexture = SOIL_load_OGL_texture (TEXTUREDIR"hellknight.tga",
+						   SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
+	hellBumpMap = SOIL_load_OGL_texture (TEXTUREDIR"hellknight_local.tga",
+						   SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
+
 	sceneShader = new Shader (SHADERDIR"shadowscenevert.glsl", SHADERDIR"shadowscenefrag.glsl");
 	shadowShader = new Shader (SHADERDIR"shadowVert.glsl", SHADERDIR"shadowFrag.glsl");
 
@@ -119,13 +124,13 @@ void Renderer::DrawCombinedScene ()
 {
 	SetCurrentShader (sceneShader);
 	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "diffuseTex"), 0);
-	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "bumpTex"), 2);
-	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "shadowTex"), 3);
+	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "bumpTex"), 1);
+	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "shadowTex"), 2);
 	glUniform3fv (glGetUniformLocation (currentShader->GetProgram (), "cameraPos"), 1, (float*)&camera->GetPosition ());
 
 	SetShaderLight (*light);
 
-	glActiveTexture (GL_TEXTURE3);
+	glActiveTexture (GL_TEXTURE2);
 	glBindTexture (GL_TEXTURE_2D, shadowTex);
 
 	viewMatrix = camera->BuildViewMatrix ();
@@ -145,6 +150,12 @@ void Renderer::DrawMesh ()
 	glUniformMatrix4fv (glGetUniformLocation (currentShader->GetProgram (), "textureMatrix"), 1, false, *&tempMatrix.values);
 	glUniformMatrix4fv (glGetUniformLocation (currentShader->GetProgram (), "modelMatrix"), 1, false, *&modelMatrix.values);
 
+	glActiveTexture (GL_TEXTURE0);
+	glBindTexture (GL_TEXTURE_2D, hellTexture);
+
+	glActiveTexture (GL_TEXTURE1);
+	glBindTexture (GL_TEXTURE_2D, hellBumpMap);
+
 	hellNode->Draw (*this);
 }
 
@@ -156,5 +167,17 @@ void Renderer::DrawFloor ()
 	glUniformMatrix4fv (glGetUniformLocation (currentShader->GetProgram (), "textureMatrix"), 1, false, *&tempMatrix.values);
 	glUniformMatrix4fv (glGetUniformLocation (currentShader->GetProgram (), "modelMatrix"), 1, false, *&modelMatrix.values);
 
+	glActiveTexture (GL_TEXTURE0);
+	glBindTexture (GL_TEXTURE_2D, floor->GetTexture ());
+
+	glActiveTexture (GL_TEXTURE1);
+	glBindTexture (GL_TEXTURE_2D, floor->GetBumpMap ());
+
 	floor->Draw ();
+
+	glActiveTexture (GL_TEXTURE0);
+	glBindTexture (GL_TEXTURE_2D, 0);
+
+	glActiveTexture (GL_TEXTURE1);
+	glBindTexture (GL_TEXTURE_2D, 0);
 }

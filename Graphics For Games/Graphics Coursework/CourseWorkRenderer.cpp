@@ -3,6 +3,7 @@
 Renderer::Renderer (Window &parent) : OGLRenderer (parent)
 {
 	camera = new Camera (0.0f, 0.0f, Vector3 (RAW_WIDTH * HEIGHTMAP_X / 2.0f, 500, RAW_HEIGHT * HEIGHTMAP_Z));
+	//camera->SetPosition (Vector3 (-200.0f, 50.0f, 250.0f));
 
 	// Generate mesh
 	skyboxMesh = Mesh::GenerateQuad (0);
@@ -62,11 +63,11 @@ Renderer::Renderer (Window &parent) : OGLRenderer (parent)
 		(RAW_WIDTH * HEIGHTMAP_X) / 2.0F
 	);
 
-	//AddLight (
-	//	Vector3 (0.0f, 500.0f, 0.0f),
-	//	Vector4 (1, 1, 1, 1),
-	//	(RAW_WIDTH * HEIGHTMAP_X) / 2.0F
-	//);
+	AddLight (
+		Vector3 (-450.0f, 200.0f, 280.0f),
+		Vector4 (1, 1, 1, 1),
+		5500.0f
+	);
 
 	for (unsigned i = 0; i < lightVector.size (); i++)
 	{
@@ -81,6 +82,51 @@ Renderer::Renderer (Window &parent) : OGLRenderer (parent)
 	timeCounter = 0.0F;
 
 	waterRotate = 0.0f;
+
+	// For hellknight and shadow
+	hellData = new MD5FileData (MESHDIR"hellknight.md5mesh");
+	hellNode = new MD5Node (*hellData);
+
+	hellData->AddAnim (MESHDIR"idle2.md5anim");
+	hellNode->PlayAnim (MESHDIR"idle2.md5anim");
+
+	hellTexture = SOIL_load_OGL_texture (TEXTUREDIR"hellknight.tga",
+										 SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
+	hellBumpMap = SOIL_load_OGL_texture (TEXTUREDIR"hellknight_local.tga",
+										 SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
+
+	sceneShader = new Shader (SHADERDIR"shadowscenevert.glsl", SHADERDIR"shadowsceneFrag.glsl");
+	shadowShader = new Shader (SHADERDIR"shadowVert.glsl", SHADERDIR"shadowFrag.glsl");
+
+	if (!sceneShader->LinkProgram () || !shadowShader->LinkProgram ())
+	{
+		return;
+	}
+
+	glGenTextures (1, &shadowTex);
+	glBindTexture (GL_TEXTURE_2D, shadowTex);
+	glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage2D (GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+				  SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+	glBindTexture (GL_TEXTURE_2D, 0);
+
+	glGenFramebuffers (1, &shadowFBO);
+	glBindFramebuffer (GL_FRAMEBUFFER, shadowFBO);
+	glFramebufferTexture2D (GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowTex, 0);
+	glDrawBuffer (GL_NONE);
+	glBindFramebuffer (GL_FRAMEBUFFER, 0);
+
+	floor = Mesh::GenerateQuad (0);
+	floor->SetTexture (SOIL_load_OGL_texture (TEXTUREDIR"brick.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	floor->SetBumpMap (SOIL_load_OGL_texture (TEXTUREDIR"brickDOT3.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	
+	if (!floor->GetTexture () || !floor->GetBumpMap ())
+	{
+		return;
+	}
 
 	init = true;
 }
@@ -110,6 +156,16 @@ Renderer::~Renderer (void)
 	delete reflectShader;
 	delete waterMesh;
 
+	glDeleteTextures (1, &shadowTex);
+	glDeleteFramebuffers (1, &shadowFBO);
+
+	delete hellData;
+	delete hellNode;
+	delete floor;
+
+	delete sceneShader;
+	delete shadowShader;
+
 	currentShader = 0;
 }
 
@@ -118,6 +174,7 @@ void Renderer::UpdateScene (float msec)
 	volcanoEmitter->Update (msec);
 	camera->UpdateCamera (msec);
 	waterRotate += msec / 1000.0f;
+	hellNode->Update (msec);
 }
 
 void Renderer::RenderScene ()
@@ -131,6 +188,8 @@ void Renderer::RenderScene ()
 	RenderWater ();
 
 	RenderParticle ();
+
+	RenderHellShadow ();
 
 	RenderText ();
 
@@ -453,4 +512,138 @@ void Renderer::RenderWater ()
 	glBindTexture (GL_TEXTURE_CUBE_MAP, 0);
 	
 	glDisable (GL_DEPTH_TEST);
+}
+
+void Renderer::RenderHellShadow ()
+{
+	glEnable (GL_DEPTH_TEST);
+
+	DrawShadowScene ();
+	DrawCombinedScene ();
+
+	glDisable (GL_DEPTH_TEST);
+}
+
+void Renderer::DrawShadowScene ()
+{
+	glBindFramebuffer (GL_FRAMEBUFFER, shadowFBO);
+
+	glClear (GL_DEPTH_BUFFER_BIT);
+
+	glViewport (0, 0, SHADOWSIZE, SHADOWSIZE);
+
+	glColorMask (GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+
+	SetCurrentShader (shadowShader);
+
+	glUseProgram (shadowShader->GetProgram ());
+
+	modelMatrix.ToIdentity ();
+	viewMatrix = Matrix4::BuildViewMatrix (lightVector[1]->GetPosition (), Vector3 (0, 0, 0));
+	projMatrix = Matrix4::Perspective (1.0f, 15000.0f, (float)width / (float)height, 45.0f);
+	textureMatrix = biasMatrix * (projMatrix * viewMatrix);
+
+	UpdateShaderMatrices ();
+
+	DrawFloor ();
+	DrawMesh ();
+
+	modelMatrix.ToIdentity ();
+	viewMatrix.ToIdentity ();
+	projMatrix.ToIdentity ();
+	//textureMatrix.ToIdentity ();
+
+	glUseProgram (0);
+	glColorMask (GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	glViewport (0, 0, width, height);
+	glBindFramebuffer (GL_FRAMEBUFFER, 0);
+}
+
+void Renderer::DrawCombinedScene ()
+{
+	SetCurrentShader (sceneShader);
+
+	glUseProgram (sceneShader->GetProgram ());
+
+	glUniform3fv (glGetUniformLocation (currentShader->GetProgram (), "cameraPos"), 1, (float*)&camera->GetPosition ());
+	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "diffuseTex"), 0);
+	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "bumpTex"), 1);
+	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "shadowTex"), 2);
+
+	SetShaderLight (*lightVector[1]);
+
+	modelMatrix.ToIdentity ();
+	viewMatrix = camera->BuildViewMatrix ();
+	projMatrix = Matrix4::Perspective (1.0f, 15000.0f, (float)width / (float)height, 45.0f);
+	//textureMatrix = biasMatrix * (projMatrix * viewMatrix); textureMatrix still the same as DrawShadowScene
+
+	UpdateShaderMatrices ();
+
+	DrawFloor ();
+	DrawMesh ();
+
+	modelMatrix.ToIdentity ();
+	viewMatrix.ToIdentity ();
+	projMatrix.ToIdentity ();
+	textureMatrix.ToIdentity ();
+
+	glUseProgram (0);
+}
+
+void Renderer::DrawFloor ()
+{
+	modelMatrix = Matrix4::Rotation (90, Vector3 (1, 0, 0)) * Matrix4 ::Scale (Vector3 (450, 450, 1));
+	Matrix4 tempMatrix = textureMatrix * modelMatrix;
+
+	glUniformMatrix4fv (glGetUniformLocation (currentShader->GetProgram (), "textureMatrix"), 1, false, *&tempMatrix.values);
+	glUniformMatrix4fv (glGetUniformLocation (currentShader->GetProgram (), "modelMatrix"), 1, false, *&modelMatrix.values);
+
+	glActiveTexture (GL_TEXTURE0);
+	glBindTexture (GL_TEXTURE_2D, floor->GetTexture ());
+
+	glActiveTexture (GL_TEXTURE1);
+	glBindTexture (GL_TEXTURE_2D, floor->GetBumpMap ());
+
+	glActiveTexture (GL_TEXTURE2);
+	glBindTexture (GL_TEXTURE_2D, shadowTex);
+
+	floor->Draw ();
+
+	glActiveTexture (GL_TEXTURE0);
+	glBindTexture (GL_TEXTURE_2D, 0);
+
+	glActiveTexture (GL_TEXTURE1);
+	glBindTexture (GL_TEXTURE_2D, 0);
+
+	glActiveTexture (GL_TEXTURE2);
+	glBindTexture (GL_TEXTURE_2D, 0);
+}
+
+void Renderer::DrawMesh ()
+{
+	modelMatrix = Matrix4::Translation (Vector3 (100, 0, 100));
+	Matrix4 tempMatrix = textureMatrix * modelMatrix;
+
+	glUniformMatrix4fv (glGetUniformLocation (currentShader->GetProgram (), "textureMatrix"), 1, false, *&tempMatrix.values);
+	glUniformMatrix4fv (glGetUniformLocation (currentShader->GetProgram (), "modelMatrix"), 1, false, *&modelMatrix.values);
+
+	glActiveTexture (GL_TEXTURE0);
+	glBindTexture (GL_TEXTURE_2D, hellTexture);
+
+	glActiveTexture (GL_TEXTURE1);
+	glBindTexture (GL_TEXTURE_2D, hellBumpMap);
+
+	glActiveTexture (GL_TEXTURE2);
+	glBindTexture (GL_TEXTURE_2D, shadowTex);
+
+	hellNode->Draw (*this);
+
+	glActiveTexture (GL_TEXTURE0);
+	glBindTexture (GL_TEXTURE_2D, 0);
+
+	glActiveTexture (GL_TEXTURE1);
+	glBindTexture (GL_TEXTURE_2D, 0);
+
+	glActiveTexture (GL_TEXTURE2);
+	glBindTexture (GL_TEXTURE_2D, 0);
 }
