@@ -102,11 +102,11 @@ void Renderer::RenderScene ()
 
 	RenderSkybox ();
 
-	//RenderHeightMap ();
+	RenderHeightMap ();
 
-	//RenderText ();
+	RenderText ();
 
-	//RenderParticle ();
+	RenderParticle ();
 
 	SwapBuffers ();
 }
@@ -145,6 +145,12 @@ void Renderer::RenderSkybox ()
 
 	glUseProgram (0);
 
+	glActiveTexture (GL_TEXTURE0);
+	glBindTexture (GL_TEXTURE_2D, 0);
+
+	glActiveTexture (GL_TEXTURE1);
+	glBindTexture (GL_TEXTURE_2D, 0);
+
 	glDepthMask (GL_TRUE);
 	glDisable (GL_BLEND);
 	glDisable (GL_TEXTURE_CUBE_MAP_SEAMLESS);
@@ -161,6 +167,9 @@ void Renderer::RenderText ()
 
 	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "diffuseTex"), 0);
 
+	glActiveTexture (GL_TEXTURE0);
+	glBindTexture (GL_TEXTURE_2D, basicFont->texture);
+
 	stringstream ss;
 	int fps = int (FPS);
 	ss << fps;
@@ -171,6 +180,9 @@ void Renderer::RenderText ()
 	DrawText ("FPS:" + s, Vector3 (0, 0, 0), 32.0f);
 
 	glUseProgram (0);
+
+	glActiveTexture (GL_TEXTURE0);
+	glBindTexture (GL_TEXTURE_2D, 0);
 
 	glDisable (GL_BLEND);
 }
@@ -255,7 +267,13 @@ void Renderer::RenderHeightMap ()
 
 	glUniform3fv (glGetUniformLocation (currentShader->GetProgram (), "cameraPos"), 1, (float *)& camera->GetPosition ());
 	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "diffuseTex"), 0);
-	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "bumpTex"), 2);
+	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "bumpTex"), 1);
+
+	glActiveTexture (GL_TEXTURE0);
+	glBindTexture (GL_TEXTURE_2D, heightMap->GetTexture ());
+
+	glActiveTexture (GL_TEXTURE1);
+	glBindTexture (GL_TEXTURE_2D, heightMap->GetBumpMap ());
 
 	modelMatrix.ToIdentity ();
 	viewMatrix = camera->BuildViewMatrix ();
@@ -270,6 +288,12 @@ void Renderer::RenderHeightMap ()
 	projMatrix.ToIdentity ();
 
 	glUseProgram (0);
+
+	glActiveTexture (GL_TEXTURE0);
+	glBindTexture (GL_TEXTURE_2D, 0);
+
+	glActiveTexture (GL_TEXTURE1);
+	glBindTexture (GL_TEXTURE_2D, 0);
 
 	glDisable (GL_DEPTH_TEST);
 }
@@ -298,6 +322,7 @@ void Renderer::RenderParticle ()
 	emitter->SetParticleLifetime (2000.0f);
 	emitter->SetParticleSpeed (0.1f);
 
+	// bind texture in it
 	emitter->Draw ();
 
 	modelMatrix.ToIdentity ();

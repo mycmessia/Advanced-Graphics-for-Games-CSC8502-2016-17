@@ -333,14 +333,14 @@ void Mesh::Draw ()
 		glDrawArrays (type, 0, numVertices);
 	}
 
-	glActiveTexture (GL_TEXTURE0);
-	glBindTexture (GL_TEXTURE_2D, 0);
+	//glActiveTexture (GL_TEXTURE0);
+	//glBindTexture (GL_TEXTURE_2D, 0);
 
-	glActiveTexture (GL_TEXTURE1);
-	glBindTexture (GL_TEXTURE_2D, 0);
+	//glActiveTexture (GL_TEXTURE1);
+	//glBindTexture (GL_TEXTURE_2D, 0);
 
-	glActiveTexture (GL_TEXTURE2);
-	glBindTexture (GL_TEXTURE_2D, 0);
+	//glActiveTexture (GL_TEXTURE2);
+	//glBindTexture (GL_TEXTURE_2D, 0);
 
 	glBindVertexArray (0);
 }
