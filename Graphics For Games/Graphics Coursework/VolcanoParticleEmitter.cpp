@@ -67,11 +67,7 @@ Particle* VolcanoParticleEmitter:: GetFreeParticle ()
 	std::uniform_real_distribution<float> dis2(-1.f, 1.f);
 
 	p->gravity = 2.0f;
-	p->colour = Vector4 (
-		dis1(generatorVolcano),
-		dis1(generatorVolcano),
-		dis1(generatorVolcano),
-		1.0);
+	p->colour = Vector4 (1.0f, 1.0f, 1.0f, 1.0f);
 
 	p->direction = initialDirection;
 	p->direction.x += (dis2(generatorVolcano) * particleVariance);

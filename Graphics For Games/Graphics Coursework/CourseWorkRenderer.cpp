@@ -62,6 +62,12 @@ Renderer::Renderer (Window &parent) : OGLRenderer (parent)
 		(RAW_WIDTH * HEIGHTMAP_X) / 2.0F
 	);
 
+	//AddLight (
+	//	Vector3 (0.0f, 500.0f, 0.0f),
+	//	Vector4 (1, 1, 1, 1),
+	//	(RAW_WIDTH * HEIGHTMAP_X) / 2.0F
+	//);
+
 	for (unsigned i = 0; i < lightVector.size (); i++)
 	{
 		lightColour[i] = lightVector[i]->GetColour ();
@@ -122,11 +128,11 @@ void Renderer::RenderScene ()
 
 	RenderHeightMap ();
 
-	RenderText ();
-
 	RenderWater ();
 
 	RenderParticle ();
+
+	RenderText ();
 
 	SwapBuffers ();
 }
@@ -344,15 +350,19 @@ void Renderer::RenderHeightMap ()
 void Renderer::RenderParticle ()
 {
 	glEnable (GL_DEPTH_TEST);
+	glDepthMask (GL_FALSE);		// Make the transparent part of png does not block back things
 
 	SetCurrentShader (particleShader);
 
 	glUseProgram (currentShader->GetProgram ());
 
 	modelMatrix.ToIdentity ();
-	modelMatrix = modelMatrix.Translation (
-		Vector3 ((RAW_HEIGHT * HEIGHTMAP_X / 2.0f), 600.0f, (RAW_HEIGHT * HEIGHTMAP_Z / 2.0F))
-	);
+
+	float x = (RAW_HEIGHT * HEIGHTMAP_X / 2.0f) - 1000.0f;
+	float y = 320.0f;
+	float z = (RAW_HEIGHT * HEIGHTMAP_Z / 2.0F) - 500.0f;
+
+	modelMatrix = modelMatrix.Translation (Vector3 (x, y, z));
 	viewMatrix = camera->BuildViewMatrix ();
 	projMatrix = Matrix4::Perspective (1.0f, 15000.0f, (float)width / (float)height, 45.0f);
 		
@@ -363,8 +373,8 @@ void Renderer::RenderParticle ()
 	SetShaderParticleSize (volcanoEmitter->GetParticleSize ());
 	volcanoEmitter->SetParticleSize (50.0f);
 	volcanoEmitter->SetParticleVariance (1.0f);
-	volcanoEmitter->SetLaunchParticles (50);
-	volcanoEmitter->SetParticleLifetime (2000.0f);
+	volcanoEmitter->SetLaunchParticles (60);
+	volcanoEmitter->SetParticleLifetime (1000.0f);
 	volcanoEmitter->SetParticleSpeed (1.6f);
 
 	// bind texture in it
@@ -375,7 +385,8 @@ void Renderer::RenderParticle ()
 	projMatrix.ToIdentity ();
 
 	glUseProgram (0);
-
+	
+	glDepthMask (GL_TRUE);
 	glDisable (GL_DEPTH_TEST);
 }
 
@@ -414,7 +425,7 @@ void Renderer::RenderWater ()
 	float heightZ = (RAW_HEIGHT * HEIGHTMAP_Z / 2.0f);
 
 	modelMatrix = Matrix4::Translation (Vector3 (heightX, heightY, heightZ)) *
-				  Matrix4::Scale (Vector3 (heightX, 1, heightZ)) * 
+				  Matrix4::Scale (Vector3 (heightX * 2.0f, 1, heightZ * 2.0f)) * 
 				  Matrix4::Rotation (90, Vector3 (1.0f, 0.0f, 1.0f));
 	viewMatrix = camera->BuildViewMatrix ();
 	projMatrix = Matrix4::Perspective (1.0f, 15000.0f, (float)width / (float)height, 45.0f);

@@ -27,7 +27,7 @@ ParticleEmitter::ParticleEmitter (void)
 	//texture = SOIL_load_OGL_texture("../Textures/particle.tga",
 	//SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_COMPRESS_TO_DXT);
 
-	texture = SOIL_load_OGL_texture (TEXTUREDIR"nyan.png",
+	texture = SOIL_load_OGL_texture (TEXTUREDIR"lava.png",
 									 SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_COMPRESS_TO_DXT);
 
 	if (!texture)
