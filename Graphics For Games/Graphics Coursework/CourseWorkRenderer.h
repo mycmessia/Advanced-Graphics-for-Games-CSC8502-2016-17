@@ -64,4 +64,11 @@ protected:
 
 	void SetShaderParticleSize (float f);
 	void RenderParticle ();
+
+	// Water
+	Shader* reflectShader;
+	Mesh* waterMesh;
+	float waterRotate;
+
+	void RenderWater ();
 };

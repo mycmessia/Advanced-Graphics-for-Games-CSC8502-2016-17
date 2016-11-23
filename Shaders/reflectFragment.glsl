@@ -1,9 +1,11 @@
 #version 330 core
 
+uniform vec3 cameraPos;
 uniform sampler2D diffuseTex;
 uniform samplerCube cubeTex;
+uniform samplerCube cubeTex2;
 
-uniform vec3 cameraPos;
+uniform float timeCounter;
 
 const int MAX_LIGHT_COUNT = 10;
 uniform int lightCount;
@@ -30,7 +32,11 @@ void main (void)
     {
         float dist = length (lightPos[i] - IN.worldPos);
         float atten = 1.0 - clamp (dist / lightRadius[i], 0.2, 1.0);
-        vec4 reflection = texture (cubeTex, reflect (incident, normalize (IN.normal)));
+        vec4 reflection = mix (
+            texture (cubeTex, reflect (incident, normalize (IN.normal))),
+            texture (cubeTex2, reflect (incident, normalize (IN.normal))),
+            timeCounter
+        );
 
         gl_FragColor += (lightColour[i] * diffuse * atten) * (diffuse + reflection);
     }

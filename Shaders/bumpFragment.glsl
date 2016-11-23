@@ -29,16 +29,16 @@ vec4 CalcMixedTex ()
 {
     const vec3 shadow = vec3 (0, 0, 0);
     const vec3 water = vec3 (0, 0.4, 0.5);
-    const vec3 snow = vec3 (1, 1, 1);
+    const vec3 lava = vec3 (0.8, 0.2, 0);
 
     float mix1 = clamp ((IN.position.y - 50.0f) / 100.0f, 0.0f, 1.0f);
-    float mix2 = clamp ((IN.position.y - 100.0f) / 150.0f, 0.0f, 1.0f);
-    float mix3 = clamp ((IN.position.y) / 100.0f, 0.0f, 1.0f);
+    float mix2 = clamp ((IN.position.y - 220.0f) / 50.0f, 0.0f, 1.0f);
+    float mix3 = clamp ((IN.position.y - 80.0f) / 100.0f, 0.0f, 1.0f);
 
     vec4 min = texture (diffuseTex, IN.texCoord);
 
     vec3 q = mix (shadow, min.rgb, mix1);
-    vec3 q1 = mix (q, snow, mix2);
+    vec3 q1 = mix (q, lava, mix2);
     vec3 q2 = mix (water, q1, mix3);
 
     return vec4 (q2, min.a);
