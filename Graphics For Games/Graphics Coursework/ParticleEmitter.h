@@ -50,19 +50,20 @@ struct Particle {
 	Vector3 position;
 	Vector4 colour;
 	Vector3 direction;
+	float gravity;
 };
 
 class ParticleEmitter : public Mesh	{
 public:
 	ParticleEmitter(void);
-	~ParticleEmitter(void);
+	virtual ~ParticleEmitter(void);
 
 	/*
 	To update our particle positions, we must have an update
 	function - which has a msec float, just like the other 
 	updating functions you've seen.
 	*/
-	void Update(float msec);
+	virtual void Update (float msec);
 
 	virtual void Draw();
 
@@ -116,19 +117,19 @@ protected:
 	This is the magic of our free list. If there's a particle 'spare',
 	this function will return that, otherwise it'll return a 'new' one
 	*/
-	Particle* GetFreeParticle();
+	virtual Particle* GetFreeParticle();
 
 	/*
 	Resizes our vertex buffers
 	*/
-	void	ResizeArrays();
+	void ResizeArrays();
 
 	float particleRate;
 	float particleLifetime;
 	float particleSize;
 	float particleVariance;
 	float particleSpeed;
-	int	  numLaunchParticles;
+	int	numLaunchParticles;
 
 	Vector3 initialDirection;
 

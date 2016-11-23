@@ -69,7 +69,7 @@ Renderer::Renderer (Window &parent) : OGLRenderer (parent)
 		lightRadius[i] = lightVector[i]->GetRadius ();
 	}
 
-	emitter = new ParticleEmitter ();
+	volcanoEmitter = new VolcanoParticleEmitter ();
 
 	isDayTime = true;
 	timeCounter = 0.0F;
@@ -99,7 +99,7 @@ Renderer::~Renderer (void)
 	}
 
 	delete particleShader;
-	delete emitter;
+	delete volcanoEmitter;
 
 	delete reflectShader;
 	delete waterMesh;
@@ -109,7 +109,7 @@ Renderer::~Renderer (void)
 
 void Renderer::UpdateScene (float msec)
 {
-	emitter->Update (msec);
+	volcanoEmitter->Update (msec);
 	camera->UpdateCamera (msec);
 	waterRotate += msec / 1000.0f;
 }
@@ -124,9 +124,9 @@ void Renderer::RenderScene ()
 
 	RenderText ();
 
-	RenderParticle ();
-
 	RenderWater ();
+
+	RenderParticle ();
 
 	SwapBuffers ();
 }
@@ -343,6 +343,8 @@ void Renderer::RenderHeightMap ()
 
 void Renderer::RenderParticle ()
 {
+	glEnable (GL_DEPTH_TEST);
+
 	SetCurrentShader (particleShader);
 
 	glUseProgram (currentShader->GetProgram ());
@@ -358,21 +360,23 @@ void Renderer::RenderParticle ()
 
 	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "diffuseTex"), 0);
 
-	SetShaderParticleSize (emitter->GetParticleSize ());
-	emitter->SetParticleSize (8.0f);
-	emitter->SetParticleVariance (1.0f);
-	emitter->SetLaunchParticles (16);
-	emitter->SetParticleLifetime (2000.0f);
-	emitter->SetParticleSpeed (0.1f);
+	SetShaderParticleSize (volcanoEmitter->GetParticleSize ());
+	volcanoEmitter->SetParticleSize (50.0f);
+	volcanoEmitter->SetParticleVariance (1.0f);
+	volcanoEmitter->SetLaunchParticles (50);
+	volcanoEmitter->SetParticleLifetime (2000.0f);
+	volcanoEmitter->SetParticleSpeed (1.6f);
 
 	// bind texture in it
-	emitter->Draw ();
+	volcanoEmitter->Draw ();
 
 	modelMatrix.ToIdentity ();
 	viewMatrix.ToIdentity ();
 	projMatrix.ToIdentity ();
 
 	glUseProgram (0);
+
+	glDisable (GL_DEPTH_TEST);
 }
 
 void Renderer::SetShaderParticleSize (float f)

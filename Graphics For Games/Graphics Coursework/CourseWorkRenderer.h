@@ -6,6 +6,7 @@
 #include "../../nclgl/Light.h"
 #include "TextMesh.h"
 #include "ParticleEmitter.h"
+#include "VolcanoParticleEmitter.h"
 
 #include <sstream>
 
@@ -59,7 +60,7 @@ protected:
 	void RenderHeightMap ();
 
 	// Particle
-	ParticleEmitter* emitter;
+	VolcanoParticleEmitter* volcanoEmitter;
 	Shader* particleShader;
 
 	void SetShaderParticleSize (float f);

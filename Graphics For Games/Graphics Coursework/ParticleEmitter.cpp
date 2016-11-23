@@ -146,6 +146,7 @@ Particle* ParticleEmitter::GetFreeParticle ()
 	std::uniform_real_distribution<float> dis1(0.f, 1.f);
 	std::uniform_real_distribution<float> dis2(-1.f, 1.f);
 
+	p->gravity = 2.0f;
 	p->colour = Vector4 (
 		dis1(generator),
 		dis1(generator),
