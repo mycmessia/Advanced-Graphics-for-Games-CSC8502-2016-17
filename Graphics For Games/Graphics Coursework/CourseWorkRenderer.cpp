@@ -20,18 +20,19 @@ Renderer::Renderer (Window &parent) : OGLRenderer (parent)
 	}
 
 	basicFont = new Font (SOIL_load_OGL_texture (TEXTUREDIR"tahoma.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_COMPRESS_TO_DXT), 16, 16);
+	
 	cubeMap = SOIL_load_OGL_cubemap (
-		TEXTUREDIR"skybox/stormydays_lf.tga", TEXTUREDIR"skybox/stormydays_rt.tga",
-		TEXTUREDIR"skybox/stormydays_up.tga", TEXTUREDIR"skybox/stormydays_dn.tga",
-		TEXTUREDIR"skybox/stormydays_ft.tga", TEXTUREDIR"skybox/stormydays_bk.tga",
+		TEXTUREDIR"rusted_west.jpg", TEXTUREDIR"rusted_east.jpg",
+		TEXTUREDIR"rusted_up.jpg", TEXTUREDIR"rusted_down.jpg",
+		TEXTUREDIR"rusted_south.jpg", TEXTUREDIR"rusted_north.jpg",
 		SOIL_LOAD_RGB,
 		SOIL_CREATE_NEW_ID, 0
 	);
 
 	cubeMap2 = SOIL_load_OGL_cubemap (
-		TEXTUREDIR"skybox/nightsky_lf.tga", TEXTUREDIR"skybox/nightsky_rt.tga",
-		TEXTUREDIR"skybox/nightsky_up.tga", TEXTUREDIR"skybox/nightsky_dn.tga",
-		TEXTUREDIR"skybox/nightsky_ft.tga", TEXTUREDIR"skybox/nightsky_bk.tga",
+		TEXTUREDIR"nightsky_lf.tga", TEXTUREDIR"nightsky_rt.tga",
+		TEXTUREDIR"nightsky_up.tga", TEXTUREDIR"nightsky_dn.tga",
+		TEXTUREDIR"nightsky_ft.tga", TEXTUREDIR"nightsky_bk.tga",
 		SOIL_LOAD_RGB,
 		SOIL_CREATE_NEW_ID, 0
 	);
@@ -61,6 +62,9 @@ Renderer::Renderer (Window &parent) : OGLRenderer (parent)
 	}
 
 	emitter = new ParticleEmitter ();
+
+	isDayTime = true;
+	timeCounter = 0.0F;
 
 	init = true;
 }
@@ -128,14 +132,37 @@ void Renderer::RenderSkybox ()
 
 	UpdateShaderMatrices ();
 
-	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "cubeTex"), 0);
-	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "cubeTex2"), 1);
+	GLuint cubeTexLoc = glGetUniformLocation (currentShader->GetProgram (), "cubeTex");
+	glUniform1i (cubeTexLoc, 0);
+
+	GLuint cubeTex2Loc = glGetUniformLocation (currentShader->GetProgram (), "cubeTex2");
+	glUniform1i (cubeTex2Loc, 1);
+
+	if (isDayTime)
+	{
+		timeCounter += 0.001f;
+		if (timeCounter >= 1.0f)
+		{
+			isDayTime = false;
+		}
+	}
+	else
+	{
+		timeCounter -= 0.001f;
+		if (timeCounter <= 0.0f)
+		{
+			isDayTime = true;
+		}
+	}
+
+	GLuint timeCounterLoc = glGetUniformLocation (currentShader->GetProgram (), "timeCounter");
+	glUniform1f (timeCounterLoc, timeCounter);
 
 	glActiveTexture (GL_TEXTURE0);
-	glBindTexture (GL_TEXTURE_2D, cubeMap);
+	glBindTexture (GL_TEXTURE_CUBE_MAP, cubeMap); // !!! Must use GL_TEXTURE_CUBE_MAP not GL_TEXTURE_2D
 
 	glActiveTexture (GL_TEXTURE1);
-	glBindTexture (GL_TEXTURE_2D, cubeMap2);
+	glBindTexture (GL_TEXTURE_CUBE_MAP, cubeMap2);
 
 	skyboxMesh->Draw ();
 
@@ -146,10 +173,10 @@ void Renderer::RenderSkybox ()
 	glUseProgram (0);
 
 	glActiveTexture (GL_TEXTURE0);
-	glBindTexture (GL_TEXTURE_2D, 0);
+	glBindTexture (GL_TEXTURE_CUBE_MAP, 0);
 
 	glActiveTexture (GL_TEXTURE1);
-	glBindTexture (GL_TEXTURE_2D, 0);
+	glBindTexture (GL_TEXTURE_CUBE_MAP, 0);
 
 	glDepthMask (GL_TRUE);
 	glDisable (GL_BLEND);
@@ -232,7 +259,7 @@ void Renderer::SetMultiLights ()
 {
 	glUniform1i (glGetUniformLocation (currentShader->GetProgram (), "lightCount"), lightVector.size ());
 
-	for (int i = 0; i < lightVector.size (); i++)
+	for (unsigned i = 0; i < lightVector.size (); i++)
 	{
 		ostringstream lcss;
 		lcss << "lightColour[" << i << "]";
@@ -318,7 +345,7 @@ void Renderer::RenderParticle ()
 	SetShaderParticleSize (emitter->GetParticleSize ());
 	emitter->SetParticleSize (8.0f);
 	emitter->SetParticleVariance (1.0f);
-	emitter->SetLaunchParticles (16.0f);
+	emitter->SetLaunchParticles (16);
 	emitter->SetParticleLifetime (2000.0f);
 	emitter->SetParticleSpeed (0.1f);
 

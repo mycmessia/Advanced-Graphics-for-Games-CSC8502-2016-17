@@ -32,8 +32,10 @@ protected:
 	void RenderText ();
 
 	// Render skybox (cubeMap)
-	GLuint cubeMap;		// day
-	GLuint cubeMap2;	// night
+	bool isDayTime;
+	GLfloat timeCounter;	// User to simulate time day2night night2day
+	GLuint cubeMap;			// day
+	GLuint cubeMap2;		// night
 	Mesh* skyboxMesh;
 	Shader* skyboxShader;
 
