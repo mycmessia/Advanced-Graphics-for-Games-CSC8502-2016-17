@@ -58,7 +58,11 @@ Renderer::Renderer (Window &parent) : OGLRenderer (parent)
 	SetTextureRepeating (heightMap->GetBumpMap (), true);
 
 	AddLight (
-		Vector3 ((RAW_HEIGHT * HEIGHTMAP_X / 2.0f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z / 2.0F)),
+		Vector3 (
+			(RAW_HEIGHT * HEIGHTMAP_X / 2.0f) + 1200.0f, 
+			500.0f, 
+			(RAW_HEIGHT * HEIGHTMAP_Z / 2.0F) + 1200.0f
+		),
 		Vector4 (1, 1, 1, 1),
 		(RAW_WIDTH * HEIGHTMAP_X) / 2.0F
 	);
@@ -77,6 +81,8 @@ Renderer::Renderer (Window &parent) : OGLRenderer (parent)
 	}
 
 	volcanoEmitter = new VolcanoParticleEmitter ();
+
+	snowEmitter = new SnowParticleEmitter ();
 
 	isDayTime = true;
 	timeCounter = 0.0F;
@@ -152,6 +158,7 @@ Renderer::~Renderer (void)
 
 	delete particleShader;
 	delete volcanoEmitter;
+	delete snowEmitter;
 
 	delete reflectShader;
 	delete waterMesh;
@@ -172,6 +179,7 @@ Renderer::~Renderer (void)
 void Renderer::UpdateScene (float msec)
 {
 	volcanoEmitter->Update (msec);
+	snowEmitter->Update (msec);
 	camera->UpdateCamera (msec);
 	waterRotate += msec / 1000.0f;
 	hellNode->Update (msec);
@@ -187,9 +195,9 @@ void Renderer::RenderScene ()
 
 	RenderWater ();
 
-	RenderParticle ();
-
 	RenderHellShadow ();
+
+	RenderParticle ();
 
 	RenderText ();
 
@@ -383,7 +391,7 @@ void Renderer::RenderHeightMap ()
 	glActiveTexture (GL_TEXTURE1);
 	glBindTexture (GL_TEXTURE_2D, heightMap->GetBumpMap ());
 
-	modelMatrix.ToIdentity ();
+	modelMatrix = Matrix4::Translation (Vector3 (1000, 0, 1000));
 	viewMatrix = camera->BuildViewMatrix ();
 	projMatrix = Matrix4::Perspective (1.0f, 15000.0f, (float)width / (float)height, 45.0f);
 
@@ -440,6 +448,20 @@ void Renderer::RenderParticle ()
 	volcanoEmitter->Draw ();
 
 	modelMatrix.ToIdentity ();
+	viewMatrix = camera->BuildViewMatrix ();
+	projMatrix = Matrix4::Perspective (1.0f, 15000.0f, (float)width / (float)height, 45.0f);
+
+	SetShaderParticleSize (snowEmitter->GetParticleSize ());
+	snowEmitter->SetParticleSize (50.0f);
+	snowEmitter->SetParticleVariance (1.0f);
+	snowEmitter->SetLaunchParticles (60);
+	snowEmitter->SetParticleLifetime (8000.0f);
+	snowEmitter->SetParticleSpeed (0.5f);
+
+	// bind texture in it
+	snowEmitter->Draw ();
+
+	modelMatrix.ToIdentity ();
 	viewMatrix.ToIdentity ();
 	projMatrix.ToIdentity ();
 
@@ -479,12 +501,12 @@ void Renderer::RenderWater ()
 	glActiveTexture (GL_TEXTURE2);
 	glBindTexture (GL_TEXTURE_CUBE_MAP, cubeMap2);
 
-	float heightX = (RAW_WIDTH * HEIGHTMAP_X / 2.0f);
+	float heightX = (RAW_WIDTH * HEIGHTMAP_X / 2.0f) + 1000.0f;
 	float heightY = 256 * HEIGHTMAP_Y / 3.0f;
-	float heightZ = (RAW_HEIGHT * HEIGHTMAP_Z / 2.0f);
+	float heightZ = (RAW_HEIGHT * HEIGHTMAP_Z / 2.0f) + 1000.0f;
 
 	modelMatrix = Matrix4::Translation (Vector3 (heightX, heightY, heightZ)) *
-				  Matrix4::Scale (Vector3 (heightX * 2.0f, 1, heightZ * 2.0f)) * 
+				  Matrix4::Scale (Vector3 (heightX * 1.4f, 1, heightZ * 1.4f)) * 
 				  Matrix4::Rotation (90, Vector3 (1.0f, 0.0f, 1.0f));
 	viewMatrix = camera->BuildViewMatrix ();
 	projMatrix = Matrix4::Perspective (1.0f, 15000.0f, (float)width / (float)height, 45.0f);
@@ -592,7 +614,9 @@ void Renderer::DrawCombinedScene ()
 
 void Renderer::DrawFloor ()
 {
-	modelMatrix = Matrix4::Rotation (90, Vector3 (1, 0, 0)) * Matrix4 ::Scale (Vector3 (450, 450, 1));
+	modelMatrix =  Matrix4::Translation (Vector3 (0, 0, 0)) * 
+				   Matrix4::Rotation (90, Vector3 (1, 0, 0)) * 
+				   Matrix4::Scale (Vector3 (450, 450, 1));
 	Matrix4 tempMatrix = textureMatrix * modelMatrix;
 
 	glUniformMatrix4fv (glGetUniformLocation (currentShader->GetProgram (), "textureMatrix"), 1, false, *&tempMatrix.values);

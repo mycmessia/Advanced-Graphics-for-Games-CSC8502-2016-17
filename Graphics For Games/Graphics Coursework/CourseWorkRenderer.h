@@ -9,6 +9,7 @@
 #include "TextMesh.h"
 #include "ParticleEmitter.h"
 #include "VolcanoParticleEmitter.h"
+#include "SnowParticleEmitter.h"
 
 #include <sstream>
 
@@ -65,6 +66,7 @@ protected:
 
 	// Particle
 	VolcanoParticleEmitter* volcanoEmitter;
+	SnowParticleEmitter* snowEmitter;
 	Shader* particleShader;
 
 	void SetShaderParticleSize (float f);

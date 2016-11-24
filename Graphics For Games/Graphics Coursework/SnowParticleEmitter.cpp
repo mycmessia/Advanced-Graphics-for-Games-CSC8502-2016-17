@@ -1,12 +1,12 @@
-#include "VolcanoParticleEmitter.h"
+#include "SnowParticleEmitter.h"
 
 #include <random>
 
-std::default_random_engine generatorVolcano;
+std::default_random_engine generatorSnow;
 
-VolcanoParticleEmitter::VolcanoParticleEmitter ()
+SnowParticleEmitter::SnowParticleEmitter ()
 {
-	texture = SOIL_load_OGL_texture (TEXTUREDIR"lava.png",
+	texture = SOIL_load_OGL_texture (TEXTUREDIR"snow.png",
 									 SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_COMPRESS_TO_DXT);
 
 	if (!texture)
@@ -15,14 +15,13 @@ VolcanoParticleEmitter::VolcanoParticleEmitter ()
 	}
 }
 
-void VolcanoParticleEmitter::Update (float msec)
+void SnowParticleEmitter::Update (float msec)
 {
-	nextParticleTime -= msec;	//some time has passed!
+	nextParticleTime -= msec;
 
 	while (nextParticleTime <= 0)
 	{
 		nextParticleTime += particleRate;
-
 		for (int i = 0; i < numLaunchParticles; ++i)
 		{
 			particles.push_back (GetFreeParticle ());
@@ -37,15 +36,12 @@ void VolcanoParticleEmitter::Update (float msec)
 
 		if (p->colour.w <= 0.0f)
 		{
-			p->gravity = 2.0f;
 			freeList.push_back (p);
 			i = particles.erase (i);
 		}
 		else
 		{
 			p->position += p->direction*(msec*particleSpeed);
-			p->position.y -= (msec * msec * msec * (p->gravity)) / 2000.0f;
-			p->gravity += msec * 0.01f;
 
 			++i;
 		}
@@ -57,11 +53,10 @@ void VolcanoParticleEmitter::Update (float msec)
 	}
 }
 
-Particle* VolcanoParticleEmitter:: GetFreeParticle ()
+Particle* SnowParticleEmitter::GetFreeParticle ()
 {
 	Particle * p = NULL;
 
-	//If we have a spare particle on the freelist, pop it off!
 	if (freeList.size () > 0)
 	{
 		p = freeList.back ();
@@ -69,25 +64,28 @@ Particle* VolcanoParticleEmitter:: GetFreeParticle ()
 	}
 	else
 	{
-		//no spare particles, so we need a new one
 		p = new Particle ();
 	}
 
-	//Now we have to reset its values - if it was popped off the
-	//free list, it'll still have the values of its 'previous life'
 	std::uniform_real_distribution<float> dis1(0.f, 1.f);
 	std::uniform_real_distribution<float> dis2(-1.f, 1.f);
+	std::uniform_real_distribution<float> dis3(-1.f, 0.f);
 
 	p->gravity = 2.0f;
-	p->colour = Vector4 (1.0f, 1.0f, 1.0f, 1.0f);
+	p->colour = Vector4 (
+		1.0f, 1.0f, 1.0f, 1.0f
+	);
 
 	p->direction = initialDirection;
-	p->direction.x += (dis2(generatorVolcano) * particleVariance);
-	p->direction.y = 1.0f;
-	p->direction.z += (dis2(generatorVolcano) * particleVariance);
+	p->direction.x += (dis2(generatorSnow) * particleVariance);
+	p->direction.y += (dis3(generatorSnow) * particleVariance);
+	p->direction.z += (dis2(generatorSnow) * particleVariance);
 
-	p->direction.Normalise ();	//Keep its direction normalised!
-	p->position.ToZero ();
+	p->direction.Normalise ();
+	float radius = 5000.0f;
+	p->position.x = dis1 (generatorSnow) * radius;
+	p->position.y = 3000.0f;
+	p->position.z = dis1 (generatorSnow) * radius;
 
-	return p;	//return the new particle :-)
+	return p;
 }

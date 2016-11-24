@@ -2,10 +2,10 @@
 
 #include "ParticleEmitter.h"
 
-class VolcanoParticleEmitter : public ParticleEmitter
+class SnowParticleEmitter : public ParticleEmitter 
 {
 public:
-	VolcanoParticleEmitter ();
+	SnowParticleEmitter ();
 
 	virtual void Update (float msec);
 
