@@ -1,9 +1,19 @@
 #include "CourseWorkRenderer.h"
 
+GLint total_mem_kb = 0;
+
+GLint cur_avail_mem_kb = 0;
+
+void getFreeVideoMemory (int* mem)
+{
+	glGetIntegerv (GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, mem);
+}
+
 Renderer::Renderer (Window &parent) : OGLRenderer (parent)
 {
+	getFreeVideoMemory (&total_mem_kb);
+
 	camera = new Camera (0.0f, 0.0f, Vector3 (RAW_WIDTH * HEIGHTMAP_X / 2.0f, 500, RAW_HEIGHT * HEIGHTMAP_Z));
-	//camera->SetPosition (Vector3 (-200.0f, 50.0f, 250.0f));
 
 	// Generate mesh
 	skyboxMesh = Mesh::GenerateQuad (0);
@@ -134,6 +144,8 @@ Renderer::Renderer (Window &parent) : OGLRenderer (parent)
 		return;
 	}
 
+	used_mem = 0;
+
 	init = true;
 }
 
@@ -202,6 +214,10 @@ void Renderer::RenderScene ()
 	RenderText ();
 
 	SwapBuffers ();
+
+	getFreeVideoMemory (&cur_avail_mem_kb);
+
+	used_mem = total_mem_kb - cur_avail_mem_kb;
 }
 
 void Renderer::RenderSkybox ()
@@ -289,11 +305,16 @@ void Renderer::RenderText ()
 	stringstream ss;
 	int fps = int (FPS);
 	ss << fps;
-	string s = ss.str();
+	string s = ss.str ();
+
+	stringstream mems;
+	mems << (int) (used_mem / 1024);
+	string ms = mems.str ();
 
 	//Render function to encapsulate our font rendering!
 	DrawText ("MeiYuchen's Course Work", lightVector[0]->GetPosition (), 64.0f, true);
 	DrawText ("FPS:" + s, Vector3 (0, 0, 0), 32.0f);
+	DrawText ("Memory Usage:" + ms + "MB", Vector3 (0, 40, 0), 32.0f);
 
 	glUseProgram (0);
 

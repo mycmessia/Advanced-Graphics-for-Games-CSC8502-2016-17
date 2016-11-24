@@ -98,4 +98,6 @@ protected:
 	void DrawShadowScene ();
 	void DrawCombinedScene ();
 	void RenderHellShadow ();
+
+	int used_mem;
 };
